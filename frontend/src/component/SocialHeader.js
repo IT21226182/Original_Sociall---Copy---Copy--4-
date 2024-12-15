@@ -12,7 +12,7 @@ const SocialHeader =()=>{
 
       
       return (
-        <nav className="navbar navbar-expand-lg" style={{ backgroundColor: 'transparent' }}>
+        <nav className="navbar navbar-expand-lg" style={{ backgroundColor: 'transparent' ,marginLeft:"20px"}}>
           <div className="container-fluid">
             <div className="collapse navbar-collapse" id="navbarNav">
               <ul className="navbar-nav">

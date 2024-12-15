@@ -4,6 +4,7 @@ import SocialHeader from './SocialHeader';
 import { useNavigate } from "react-router-dom";
 
 import downloadImg from './images/sback.jpg';
+import download from './images/a.png';
 
 export default function InitialQuestion() {
   const [age, setAge] = useState("");
@@ -76,6 +77,27 @@ export default function InitialQuestion() {
     width: "400px",
   };
 
+  const containerStyle = {
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    height: "60vh",
+   
+   
+  };
+
+  const imageStyle = {
+    maxWidth: "100%",
+    height: "auto",
+    border: "none", // Optional for styling
+    
+  };
+
+
+
+
+
+
   // Text for each language
   const labels = {
     sinhala: { age: "වයස", gender: "ස්ත්‍රී පුරුෂ භාවය", male: "පුරුෂ", female: "ස්ත්‍රී", title: "සිංහල" },
@@ -103,10 +125,26 @@ export default function InitialQuestion() {
       
 }}>
       <SocialHeader />
-      <div style={{ textAlign: 'center', marginTop: '500px' }}>
+      <div style = {{color:"#1C325B",
+    fontWeight: "1000", 
+    fontSize: "70px",
+    fontStyle:"oblique",
+    marginLeft:"350px",
+    }}> Social Skills Observation</div>
+    <div>
+      <h3 style = {{color:"#1C325B",
+    fontWeight: "20", 
+    fontSize: "20px",
+    textAlign:"center",
+    marginTop:"10px"}} >Answer this brief questionnaire to better understand your child's social and communication <br></br>development, tailored to provide helpful insights and support.</h3>
+    </div>
+      
+      <div style={{ textAlign: 'center', marginTop: '60px' }}>
         <button onClick={() => setShowPopup(true)} style={buttonStyle}>Start here</button>
       </div>
-
+      <div style={containerStyle}>
+      <img  style={imageStyle} src={download} alt="Description of the image" />
+    </div>
       {showPopup && (
         <div style={{
           position: 'fixed',
