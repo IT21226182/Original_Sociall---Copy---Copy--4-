@@ -6,6 +6,7 @@ import InitialQuestion from './component/InitialQuestion';
 import Questionnaire from './component/Questionnaire';
 import AllSales from './component/AllSales';
 import Edit from './component/Edit';
+import Simon from './component/Simon';
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
           {/* Other routes */}
           <Route path="/view" element={<AllSales />} />
           <Route path="/update" element={<Edit />} />
+          <Route path="/simon" element={<Simon />} />
         </Routes>
       </BrowserRouter>
     </div>
