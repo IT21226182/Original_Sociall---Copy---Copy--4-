@@ -4,15 +4,15 @@ import simonTouchNose from "./images/hi.gif";
 import simonWave from "./images/simon4.gif";
 import simonSpin from "./images/simon5.gif";
 import simonSad from "./images/simon4.gif";
-import goodJobImage from "./images/a.png";
-import goodJobSound from "./images/goodjob.mp3";
+import goodJobImage from "./images/simon4.gif";
+import goodJobSound from "./images/clap.wav";
 
 const commands = [
-  { text: "Simon says say hello to your friend bunny", valid: true, actionImage: simonTouchNose },
+  { text: "Simon says say hello to bunny", valid: true, actionImage: simonTouchNose },
   { text: "Jump three times", valid: false, actionImage: simonSad },
-  { text: "Simon says wave at mom", valid: true, actionImage: simonWave },
+  { text: "Simon says wave at bunny", valid: true, actionImage: simonWave },
   { text: "Clap your hands", valid: false, actionImage: simonSad },
-  { text: "Simon says spin around", valid: true, actionImage: simonSpin }
+  { text: "Simon says say thank you to bunny", valid: true, actionImage: simonSpin }
 ];
 
 export default function SimonSaysGame() {
@@ -32,19 +32,19 @@ export default function SimonSaysGame() {
       speechSynthesis.onvoiceschanged = speakCommand;
       return;
     }
-
+    
     const utterance = new SpeechSynthesisUtterance(commands[currentIndex].text);
     utterance.voice = voices.find((voice) => voice.name.includes("Male")) || voices[0];
-
+    
     setIsSpeaking(true);
     setShowActionImage(false);
     setShowGoodJob(false);
-
+    
     utterance.onend = () => {
       setIsSpeaking(false);
       setShowActionImage(true);
     };
-
+    
     speechSynthesis.speak(utterance);
   };
 
@@ -54,41 +54,29 @@ export default function SimonSaysGame() {
     }
   }, [currentIndex, gameStarted]);
 
-  useEffect(() => {
-    window.speechSynthesis.getVoices();
-  }, []);
-
-  const handleResponse = (childDidAction) => {
+  const handleResponse = (isCorrect) => {
     if (!gameStarted) return;
 
-    const isSimonSaid = commands[currentIndex].valid;
-    const isCorrect = (isSimonSaid && childDidAction) || (!isSimonSaid && !childDidAction);
-
-    setAttempts((prev) => prev + 1);
-
-    if (isCorrect) {
-      setScore((prev) => prev + 1);
+    const isValid = commands[currentIndex].valid;
+    if (isCorrect === isValid) {
+      setScore(prevScore => prevScore + 1);
       setActionStatus("correct");
       setShowGoodJob(true);
-
       const audio = new Audio(goodJobSound);
       audio.play();
-
-      setTimeout(() => {
-        setShowGoodJob(false);
-        moveToNextCommand();
-      }, 2000);
     } else {
       setActionStatus("incorrect");
-      moveToNextCommand();
     }
+
+    setAttempts(prevAttempts => prevAttempts + 1);
+    setTimeout(moveToNextCommand, 2000);
   };
 
   const moveToNextCommand = () => {
-    if (attempts + 1 >= 5) {
-      const finalScorePercentage = (score / (attempts + 1)) * 100;
-      setFinalScore(finalScorePercentage.toFixed(2));
-      alert(`Game Over! Final Score: ${finalScorePercentage.toFixed(2)}%`);
+    if (attempts + 1 >= commands.length) {
+      const finalScorePercentage = Math.round((score / commands.length) * 100);
+      setFinalScore(finalScorePercentage);
+      alert(`Game Over! Final Score: ${finalScorePercentage}%`);
       resetGame();
     } else {
       setCurrentIndex((prevIndex) => (prevIndex + 1) % commands.length);
@@ -151,10 +139,10 @@ export default function SimonSaysGame() {
                 onClick={() => handleResponse(false)}
                 className="bg-red-500 text-white px-4 py-2 rounded-xl hover:bg-red-600"
               >
-                Child Didn't ❌
+                Child Didnt ❌
               </button>
             </div>
-            <p className="mt-4 text-gray-700">Score: {score} | Attempts: {attempts}/5</p>
+            <p className="mt-4 text-gray-700">Score: {score} | Attempts: {attempts}/{commands.length}</p>
           </>
         )}
 
