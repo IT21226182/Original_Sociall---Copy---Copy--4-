@@ -8,7 +8,7 @@ import goodJobImage from "./images/a.png";
 import goodJobSound from "./images/goodjob.mp3";
 
 const commands = [
-  { text: "Simon says say hello to your friend", valid: true, actionImage: simonTouchNose },
+  { text: "Simon says say hello to your friend bunny", valid: true, actionImage: simonTouchNose },
   { text: "Jump three times", valid: false, actionImage: simonSad },
   { text: "Simon says wave at mom", valid: true, actionImage: simonWave },
   { text: "Clap your hands", valid: false, actionImage: simonSad },
@@ -36,7 +36,7 @@ export default function SimonSaysGame() {
     const utterance = new SpeechSynthesisUtterance(commands[currentIndex].text);
     utterance.voice = voices.find((voice) => voice.name.includes("Male")) || voices[0];
 
-    setIsSpeaking(true); // Show Simon Talking image
+    setIsSpeaking(true);
     setShowActionImage(false);
     setShowGoodJob(false);
 
@@ -54,34 +54,41 @@ export default function SimonSaysGame() {
     }
   }, [currentIndex, gameStarted]);
 
-  const handleResponse = (isCorrect) => {
+  useEffect(() => {
+    window.speechSynthesis.getVoices();
+  }, []);
+
+  const handleResponse = (childDidAction) => {
     if (!gameStarted) return;
 
-    const isValid = commands[currentIndex].valid;
-    if (isCorrect === isValid) {
-      setScore(score + 1);
+    const isSimonSaid = commands[currentIndex].valid;
+    const isCorrect = (isSimonSaid && childDidAction) || (!isSimonSaid && !childDidAction);
+
+    setAttempts((prev) => prev + 1);
+
+    if (isCorrect) {
+      setScore((prev) => prev + 1);
       setActionStatus("correct");
       setShowGoodJob(true);
-      
+
       const audio = new Audio(goodJobSound);
       audio.play();
-      
+
       setTimeout(() => {
         setShowGoodJob(false);
         moveToNextCommand();
-      }, 3000);
+      }, 2000);
     } else {
       setActionStatus("incorrect");
       moveToNextCommand();
     }
-    setAttempts(attempts + 1);
   };
 
   const moveToNextCommand = () => {
     if (attempts + 1 >= 5) {
-      const finalScorePercentage = (score / 5) * 100;
-      setFinalScore(finalScorePercentage);
-      alert(`Game Over! Final Score: ${finalScorePercentage}%`);
+      const finalScorePercentage = (score / (attempts + 1)) * 100;
+      setFinalScore(finalScorePercentage.toFixed(2));
+      alert(`Game Over! Final Score: ${finalScorePercentage.toFixed(2)}%`);
       resetGame();
     } else {
       setCurrentIndex((prevIndex) => (prevIndex + 1) % commands.length);
@@ -138,13 +145,13 @@ export default function SimonSaysGame() {
                 onClick={() => handleResponse(true)}
                 className="bg-green-500 text-white px-4 py-2 rounded-xl hover:bg-green-600"
               >
-                Correct ✅
+                Child Did ✅
               </button>
               <button
                 onClick={() => handleResponse(false)}
                 className="bg-red-500 text-white px-4 py-2 rounded-xl hover:bg-red-600"
               >
-                Incorrect ❌
+                Child Didn't ❌
               </button>
             </div>
             <p className="mt-4 text-gray-700">Score: {score} | Attempts: {attempts}/5</p>
