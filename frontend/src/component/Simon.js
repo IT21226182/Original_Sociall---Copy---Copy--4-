@@ -1,221 +1,163 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
+import simonTalking from "./images/simon.gif"; // Simon talking
+import simonTouchNose from "./images/simon5.gif"; // Simon touching nose
+import simonWave from "./images/simon4.gif"; // Simon waving
+import simonSpin from "./images/simon5.gif"; // Simon spinning
+import simonSad from "./images/simon4.gif"; // Simon sad for incorrect actions
+import goodJobImage from "./images/a.png"; // Good job image
+import goodJobSound from "./images/goodjob.mp3"; // Good job sound
 
-// Adding styles directly inside the JavaScript file
-const styles = {
-  app: {
-    textAlign: 'center',
-    fontFamily: 'Arial, sans-serif',
-  },
-  simonContainer: {
-    margin: '20px',
-  },
-  simon: {
-    width: '100px',
-    height: '200px',
-    margin: 'auto',
-    borderRadius: '20px',
-    position: 'relative',
-  },
-  simonHead: {
-    width: '60px',
-    height: '60px',
-    backgroundColor: '#f0c400',
-    borderRadius: '50%',
-    margin: '20px auto',
-  },
-  simonBody: {
-    width: '80px',
-    height: '120px',
-    backgroundColor: '#f0c400',
-    margin: 'auto',
-    borderRadius: '10px',
-  },
-  simonArms: {
-    width: '20px',
-    height: '80px',
-    backgroundColor: '#f0c400',
-    position: 'absolute',
-    top: '60px',
-    left: '50%',
-    transform: 'translateX(-50%)',
-    display: 'flex',
-    justifyContent: 'space-between',
-    animation: 'wave 2s infinite',
-  },
-  simonLegs: {
-    width: '100px',
-    height: '20px',
-    backgroundColor: '#f0c400',
-    position: 'absolute',
-    bottom: '10px',
-    margin: 'auto',
-    left: '0',
-    right: '0',
-    borderRadius: '10px',
-  },
-  buttons: {
-    display: 'flex',
-    justifyContent: 'center',
-    gap: '20px',
-    marginTop: '20px',
-  },
-  button: {
-    padding: '10px 20px',
-    fontSize: '16px',
-    cursor: 'pointer',
-    border: 'none',
-    borderRadius: '5px',
-    backgroundColor: '#4CAF50',
-    color: 'white',
-  },
-  buttonFocus: {
-    outline: 'none',
-  },
-  gameOverText: {
-    fontSize: '20px',
-    color: 'red',
-    marginTop: '20px',
-  },
-  scoreText: {
-    fontSize: '20px',
-    marginTop: '20px',
-  },
-  instruction: {
-    fontSize: '18px',
-    fontWeight: 'bold',
-    marginTop: '20px',
-    opacity: 0,
-    animation: 'fadeIn 2s forwards',
-  },
-};
+const commands = [
+  { text: "Simon says touch your nose", valid: true, actionImage: simonTouchNose },
+  { text: "Jump three times", valid: false, actionImage: simonSad },
+  { text: "Simon says wave at mom", valid: true, actionImage: simonWave },
+  { text: "Clap your hands", valid: false, actionImage: simonSad },
+  { text: "Simon says spin around", valid: true, actionImage: simonSpin }
+];
 
-// Keyframes for the wave animation (simulating a movement)
-const waveKeyframes = `
-@keyframes wave {
-  0% { transform: translateX(-50%) rotate(0deg); }
-  50% { transform: translateX(-50%) rotate(15deg); }
-  100% { transform: translateX(-50%) rotate(0deg); }
-}
-`;
-
-// Keyframes for the fade-in animation of instructions
-const fadeInKeyframes = `
-@keyframes fadeIn {
-  0% { opacity: 0; }
-  100% { opacity: 1; }
-}
-`;
-
-function App() {
-  const [simonSays, setSimonSays] = useState('');
-  const [instruction, setInstruction] = useState('');
-  const [attempts, setAttempts] = useState(0);
+export default function SimonSaysGame() {
+  const [gameStarted, setGameStarted] = useState(false);
+  const [currentIndex, setCurrentIndex] = useState(0);
   const [score, setScore] = useState(0);
-  const [gameOver, setGameOver] = useState(false);
+  const [attempts, setAttempts] = useState(0);
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [showActionImage, setShowActionImage] = useState(false);
+  const [actionStatus, setActionStatus] = useState(""); // Track correct or incorrect action
+  const [finalScore, setFinalScore] = useState(null); // Save final score
 
-  const instructions = [
-    'Simon says touch your nose.',
-    'Simon says jump up and down.',
-    'Simon says clap your hands.',
-    'Touch your head.',
-    'Simon says spin around.',
-    'Sit down.',
-  ];
+  const speakCommand = () => {
+    const voices = speechSynthesis.getVoices();
+    if (voices.length === 0) {
+      speechSynthesis.onvoiceschanged = speakCommand;
+      return;
+    }
 
-  const simonSayInstructions = [
-    'Simon says touch your nose.',
-    'Simon says jump up and down.',
-    'Simon says clap your hands.',
-    'Simon says spin around.',
-  ];
+    const utterance = new SpeechSynthesisUtterance(commands[currentIndex].text);
+    utterance.voice = voices.find((voice) => voice.name.includes("Male")) || voices[0];
 
-  const noSimonInstructions = ['Touch your head.', 'Sit down.'];
+    utterance.onstart = () => {
+      setIsSpeaking(true);
+      setShowActionImage(false); // Hide action image while speaking
+    };
 
-  const randomInstruction = () => {
-    const randomIndex = Math.floor(Math.random() * instructions.length);
-    const instruction = instructions[randomIndex];
-    setInstruction(instruction);
-    const isSimonSays = simonSayInstructions.includes(instruction);
-    setSimonSays(isSimonSays ? 'Simon says' : '');
+    utterance.onend = () => {
+      setIsSpeaking(false);
+      setShowActionImage(true); // Show action image after speaking
+    };
+
+    speechSynthesis.speak(utterance);
   };
 
-  const handleClickCorrect = () => {
-    if (simonSays && attempts < 3 && instruction.startsWith('Simon says')) {
+  useEffect(() => {
+    if (gameStarted) {
+      speakCommand();
+    }
+  }, [currentIndex, gameStarted]);
+
+  const handleResponse = (isCorrect) => {
+    if (!gameStarted) return; // Prevent clicks before starting
+
+    const isValid = commands[currentIndex].valid;
+    if (isCorrect === isValid) {
       setScore(score + 1);
-      alert('Correct!');
-      nextInstruction();
+      setActionStatus("correct");
+
+      // Play "Good Job" sound
+      const audio = new Audio(goodJobSound);
+      audio.play();
+
+      // Delay for 3 seconds before moving to the next command
+      setTimeout(() => {
+        moveToNextCommand();
+      }, 3000);
     } else {
-      alert('Wrong! Try again.');
-      setAttempts(attempts + 1);
+      setActionStatus("incorrect");
+      moveToNextCommand(); // No delay for incorrect responses
+    }
+
+    setAttempts(attempts + 1);
+  };
+
+  const moveToNextCommand = () => {
+    if (attempts + 1 >= 5) {
+      const finalScorePercentage = (score / 5) * 100;
+      setFinalScore(finalScorePercentage);
+      alert(`Game Over! Final Score: ${finalScorePercentage}%`);
+      resetGame();
+    } else {
+      setCurrentIndex((prevIndex) => (prevIndex + 1) % commands.length);
+      setActionStatus(""); // Reset action status
+      setShowActionImage(false); // Hide image for new command until speech ends
     }
   };
 
-  const handleClickWrong = () => {
-    if (!simonSays && attempts < 3) {
-      setScore(score + 1);
-      alert('Correct! You should not have done the action.');
-      nextInstruction();
-    } else {
-      alert('Wrong! Try again.');
-      setAttempts(attempts + 1);
-    }
-  };
-
-  const handleTryAgain = () => {
+  const resetGame = () => {
+    setGameStarted(false);
+    setCurrentIndex(0);
+    setScore(0);
     setAttempts(0);
-    // Keep the same instruction when try again is clicked
-    randomInstruction();
+    setActionStatus("");
+    setFinalScore(null);
+    setShowActionImage(false);
   };
 
-  const nextInstruction = () => {
-    if (attempts < 3) {
-      setAttempts(0);
-      randomInstruction();
-    } else {
-      setGameOver(true);
+  const getImageForAction = () => {
+    if (isSpeaking) {
+      return simonTalking; // Show talking GIF while speaking
+    } else if (actionStatus === "correct") {
+      return goodJobImage; // Show "Good Job" image when correct
+    } else if (actionStatus === "incorrect") {
+      return simonSad; // Show sad GIF when incorrect
     }
+    return commands[currentIndex].actionImage; // Default action image
   };
-
-  useEffect(() => {
-    randomInstruction();
-  }, []);
-
-  useEffect(() => {
-    if (instruction) {
-      const speech = new SpeechSynthesisUtterance(instruction);
-      speechSynthesis.speak(speech);
-    }
-  }, [instruction]);
 
   return (
-    <div style={styles.app}>
-      {/* Injecting the wave and fadeIn animation styles */}
-      <style>{waveKeyframes}</style>
-      <style>{fadeInKeyframes}</style>
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-6">
+      <div className="bg-white shadow-lg rounded-2xl p-6 w-full max-w-md text-center">
+        <h1 className="text-xl font-bold mb-4">Simon Says Game</h1>
 
-      <div style={styles.simonContainer}>
-        <div style={styles.simon}>
-          {/* Animated man as Simon */}
-          <div style={styles.simonHead}></div>
-          <div style={styles.simonBody}></div>
-          <div style={styles.simonArms}></div>
-          <div style={styles.simonLegs}></div>
-        </div>
-        <h2>{simonSays ? simonSays : 'Your turn!'}</h2>
-        {/* Animated instruction */}
-        <p style={styles.instruction}>{instruction}</p>
-      </div>
-      <div style={styles.buttons}>
-        <button style={styles.button} onClick={handleClickCorrect}>Correct</button>
-        <button style={styles.button} onClick={handleClickWrong}>Wrong</button>
-        {attempts < 3 && !gameOver && (
-          <button style={styles.button} onClick={handleTryAgain}>Try Again</button>
+        {!gameStarted ? (
+          <button
+            onClick={() => setGameStarted(true)}
+            className="bg-blue-500 text-white px-6 py-3 rounded-xl hover:bg-blue-600 text-lg"
+          >
+            Start Game 🎮
+          </button>
+        ) : (
+          <>
+            {/* Show talking GIF when speaking, then action image after speaking */}
+            <img
+              src={showActionImage ? getImageForAction() : simonTalking}
+              alt="Simon Character"
+              className="w-32 h-32 mx-auto mb-4 transition-all duration-300"
+            />
+
+            <p className="text-lg mb-4">{commands[currentIndex].text}</p>
+            <div className="flex space-x-4">
+              <button
+                onClick={() => handleResponse(true)}
+                className="bg-green-500 text-white px-4 py-2 rounded-xl hover:bg-green-600"
+              >
+                Correct ✅
+              </button>
+              <button
+                onClick={() => handleResponse(false)}
+                className="bg-red-500 text-white px-4 py-2 rounded-xl hover:bg-red-600"
+              >
+                Incorrect ❌
+              </button>
+            </div>
+            <p className="mt-4 text-gray-700">Score: {score} | Attempts: {attempts}/5</p>
+          </>
+        )}
+
+        {finalScore !== null && (
+          <p className="mt-4 text-lg font-bold text-purple-700">
+            Final Score: {finalScore}%
+          </p>
         )}
       </div>
-      {gameOver && <h3 style={styles.gameOverText}>Game Over! You've exceeded the number of attempts.</h3>}
-      <div style={styles.scoreText}>Score: {score}</div>
     </div>
   );
 }
-
-export default App;
