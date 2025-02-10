@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from "react";
-import simonTalking from "./images/simon.gif"; // Simon talking
-import simonTouchNose from "./images/simon5.gif"; // Simon touching nose
-import simonWave from "./images/simon4.gif"; // Simon waving
-import simonSpin from "./images/simon5.gif"; // Simon spinning
-import simonSad from "./images/simon4.gif"; // Simon sad for incorrect actions
-import goodJobImage from "./images/a.png"; // Good job image
-import goodJobSound from "./images/goodjob.mp3"; // Good job sound
+import simonTalking from "./images/simon.gif";
+import simonTouchNose from "./images/hi.gif";
+import simonWave from "./images/simon4.gif";
+import simonSpin from "./images/simon5.gif";
+import simonSad from "./images/simon4.gif";
+import goodJobImage from "./images/a.png";
+import goodJobSound from "./images/goodjob.mp3";
 
 const commands = [
-  { text: "Simon says touch your nose", valid: true, actionImage: simonTouchNose },
+  { text: "Simon says say hello to your friend", valid: true, actionImage: simonTouchNose },
   { text: "Jump three times", valid: false, actionImage: simonSad },
   { text: "Simon says wave at mom", valid: true, actionImage: simonWave },
   { text: "Clap your hands", valid: false, actionImage: simonSad },
@@ -22,8 +22,9 @@ export default function SimonSaysGame() {
   const [attempts, setAttempts] = useState(0);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [showActionImage, setShowActionImage] = useState(false);
-  const [actionStatus, setActionStatus] = useState(""); // Track correct or incorrect action
-  const [finalScore, setFinalScore] = useState(null); // Save final score
+  const [actionStatus, setActionStatus] = useState("");
+  const [finalScore, setFinalScore] = useState(null);
+  const [showGoodJob, setShowGoodJob] = useState(false);
 
   const speakCommand = () => {
     const voices = speechSynthesis.getVoices();
@@ -35,14 +36,13 @@ export default function SimonSaysGame() {
     const utterance = new SpeechSynthesisUtterance(commands[currentIndex].text);
     utterance.voice = voices.find((voice) => voice.name.includes("Male")) || voices[0];
 
-    utterance.onstart = () => {
-      setIsSpeaking(true);
-      setShowActionImage(false); // Hide action image while speaking
-    };
+    setIsSpeaking(true); // Show Simon Talking image
+    setShowActionImage(false);
+    setShowGoodJob(false);
 
     utterance.onend = () => {
       setIsSpeaking(false);
-      setShowActionImage(true); // Show action image after speaking
+      setShowActionImage(true);
     };
 
     speechSynthesis.speak(utterance);
@@ -55,26 +55,25 @@ export default function SimonSaysGame() {
   }, [currentIndex, gameStarted]);
 
   const handleResponse = (isCorrect) => {
-    if (!gameStarted) return; // Prevent clicks before starting
+    if (!gameStarted) return;
 
     const isValid = commands[currentIndex].valid;
     if (isCorrect === isValid) {
       setScore(score + 1);
       setActionStatus("correct");
-
-      // Play "Good Job" sound
+      setShowGoodJob(true);
+      
       const audio = new Audio(goodJobSound);
       audio.play();
-
-      // Delay for 3 seconds before moving to the next command
+      
       setTimeout(() => {
+        setShowGoodJob(false);
         moveToNextCommand();
       }, 3000);
     } else {
       setActionStatus("incorrect");
-      moveToNextCommand(); // No delay for incorrect responses
+      moveToNextCommand();
     }
-
     setAttempts(attempts + 1);
   };
 
@@ -86,8 +85,9 @@ export default function SimonSaysGame() {
       resetGame();
     } else {
       setCurrentIndex((prevIndex) => (prevIndex + 1) % commands.length);
-      setActionStatus(""); // Reset action status
-      setShowActionImage(false); // Hide image for new command until speech ends
+      setActionStatus("");
+      setShowActionImage(false);
+      setShowGoodJob(false);
     }
   };
 
@@ -99,17 +99,18 @@ export default function SimonSaysGame() {
     setActionStatus("");
     setFinalScore(null);
     setShowActionImage(false);
+    setShowGoodJob(false);
   };
 
   const getImageForAction = () => {
     if (isSpeaking) {
-      return simonTalking; // Show talking GIF while speaking
-    } else if (actionStatus === "correct") {
-      return goodJobImage; // Show "Good Job" image when correct
+      return simonTalking;
+    } else if (showGoodJob) {
+      return goodJobImage;
     } else if (actionStatus === "incorrect") {
-      return simonSad; // Show sad GIF when incorrect
+      return simonSad;
     }
-    return commands[currentIndex].actionImage; // Default action image
+    return commands[currentIndex].actionImage;
   };
 
   return (
@@ -126,13 +127,11 @@ export default function SimonSaysGame() {
           </button>
         ) : (
           <>
-            {/* Show talking GIF when speaking, then action image after speaking */}
             <img
-              src={showActionImage ? getImageForAction() : simonTalking}
+              src={getImageForAction()}
               alt="Simon Character"
               className="w-32 h-32 mx-auto mb-4 transition-all duration-300"
             />
-
             <p className="text-lg mb-4">{commands[currentIndex].text}</p>
             <div className="flex space-x-4">
               <button
