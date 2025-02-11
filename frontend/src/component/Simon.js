@@ -7,17 +7,29 @@ import simonSad from "./images/simon4.gif";
 import goodJobImage from "./images/simon4.gif";
 import goodJobSound from "./images/clap.wav";
 
-const commands = [
-  { text: "Simon says say hello to bunny", valid: true, actionImage: simonTouchNose },
-  { text: "Jump three times", valid: false, actionImage: simonSad },
-  { text: "Simon says wave at bunny", valid: true, actionImage: simonWave },
-  { text: "Clap your hands", valid: false, actionImage: simonSad },
-  { text: "Simon says say thank you to bunny", valid: true, actionImage: simonSpin }
-];
+const levels = {
+  1: [
+    { text: "Simon says, say hello", valid: true, actionImage: simonTouchNose },
+    { text: "Jump three times", valid: false, actionImage: simonSad },
+    { text: "Simon says give a comforting hug!", valid: true, actionImage: simonWave },
+  ],
+  2: [
+    { text: "Clap your hands", valid: false, actionImage: simonSad },
+    { text: "Simon says, Show me a happy face!", valid: true, actionImage: simonSpin },
+    { text: "Simon says, Look at my eyes", valid: true, actionImage: simonSpin },
+  ],
+  3: [
+    { text: "Simon says, Give a high-five", valid: true, actionImage: simonSpin },
+    { text: "Simon says, Say 'thank you' with a smile", valid: true, actionImage: simonSpin },
+    { text: "Simon says, Raise your hand and wait!", valid: true, actionImage: simonSpin },
+    { text: "Simon says, Say 'I like your drawing!' to a mom!", valid: true, actionImage: simonSpin },
+  ],
+};
 
 export default function SimonSaysGame() {
   const [gameStarted, setGameStarted] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [currentLevel, setCurrentLevel] = useState(null);
   const [score, setScore] = useState(0);
   const [attempts, setAttempts] = useState(0);
   const [isSpeaking, setIsSpeaking] = useState(false);
@@ -26,6 +38,8 @@ export default function SimonSaysGame() {
   const [finalScore, setFinalScore] = useState(null);
   const [showGoodJob, setShowGoodJob] = useState(false);
 
+  const currentCommand = levels[currentLevel]?.[currentIndex] || {};
+
   const speakCommand = () => {
     const voices = speechSynthesis.getVoices();
     if (voices.length === 0) {
@@ -33,7 +47,7 @@ export default function SimonSaysGame() {
       return;
     }
     
-    const utterance = new SpeechSynthesisUtterance(commands[currentIndex].text);
+    const utterance = new SpeechSynthesisUtterance(currentCommand.text);
     utterance.voice = voices.find((voice) => voice.name.includes("Male")) || voices[0];
     
     setIsSpeaking(true);
@@ -57,7 +71,7 @@ export default function SimonSaysGame() {
   const handleResponse = (isCorrect) => {
     if (!gameStarted) return;
 
-    const isValid = commands[currentIndex].valid;
+    const isValid = currentCommand.valid;
     if (isCorrect === isValid) {
       setScore(prevScore => prevScore + 1);
       setActionStatus("correct");
@@ -73,13 +87,13 @@ export default function SimonSaysGame() {
   };
 
   const moveToNextCommand = () => {
-    if (attempts + 1 >= commands.length) {
-      const finalScorePercentage = Math.round((score / commands.length) * 100);
+    if (currentIndex + 1 >= levels[currentLevel].length) {
+      const finalScorePercentage = Math.round((score / levels[currentLevel].length) * 100);
       setFinalScore(finalScorePercentage);
       alert(`Game Over! Final Score: ${finalScorePercentage}%`);
       resetGame();
     } else {
-      setCurrentIndex((prevIndex) => (prevIndex + 1) % commands.length);
+      setCurrentIndex((prevIndex) => prevIndex + 1);
       setActionStatus("");
       setShowActionImage(false);
       setShowGoodJob(false);
@@ -95,6 +109,7 @@ export default function SimonSaysGame() {
     setFinalScore(null);
     setShowActionImage(false);
     setShowGoodJob(false);
+    setCurrentLevel(null);
   };
 
   const getImageForAction = () => {
@@ -105,7 +120,7 @@ export default function SimonSaysGame() {
     } else if (actionStatus === "incorrect") {
       return simonSad;
     }
-    return commands[currentIndex].actionImage;
+    return currentCommand.actionImage || simonTalking;
   };
 
   return (
@@ -114,12 +129,27 @@ export default function SimonSaysGame() {
         <h1 className="text-xl font-bold mb-4">Simon Says Game</h1>
 
         {!gameStarted ? (
-          <button
-            onClick={() => setGameStarted(true)}
-            className="bg-blue-500 text-white px-6 py-3 rounded-xl hover:bg-blue-600 text-lg"
-          >
-            Start Game 🎮
-          </button>
+          currentLevel === null ? (
+            <div>
+              <h2 className="text-lg mb-4">Select Level</h2>
+              {[1, 2, 3].map((level) => (
+                <button
+                  key={level}
+                  onClick={() => setCurrentLevel(level)}
+                  className="bg-blue-500 text-white px-4 py-2 rounded-xl m-2 hover:bg-blue-600"
+                >
+                  Level {level}
+                </button>
+              ))}
+            </div>
+          ) : (
+            <button
+              onClick={() => setGameStarted(true)}
+              className="bg-blue-500 text-white px-6 py-3 rounded-xl hover:bg-blue-600 text-lg"
+            >
+              Start Game 🎮
+            </button>
+          )
         ) : (
           <>
             <img
@@ -127,7 +157,7 @@ export default function SimonSaysGame() {
               alt="Simon Character"
               className="w-32 h-32 mx-auto mb-4 transition-all duration-300"
             />
-            <p className="text-lg mb-4">{commands[currentIndex].text}</p>
+            <p className="text-lg mb-4">{currentCommand.text}</p>
             <div className="flex space-x-4">
               <button
                 onClick={() => handleResponse(true)}
@@ -139,17 +169,11 @@ export default function SimonSaysGame() {
                 onClick={() => handleResponse(false)}
                 className="bg-red-500 text-white px-4 py-2 rounded-xl hover:bg-red-600"
               >
-                Child Didnt ❌
+                Child Didn't ❌
               </button>
             </div>
-            <p className="mt-4 text-gray-700">Score: {score} | Attempts: {attempts}/{commands.length}</p>
+            <p className="mt-4 text-gray-700">Score: {score} | Attempts: {attempts}/{levels[currentLevel].length}</p>
           </>
-        )}
-
-        {finalScore !== null && (
-          <p className="mt-4 text-lg font-bold text-purple-700">
-            Final Score: {finalScore}%
-          </p>
         )}
       </div>
     </div>
