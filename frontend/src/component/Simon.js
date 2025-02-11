@@ -46,19 +46,19 @@ export default function SimonSaysGame() {
       speechSynthesis.onvoiceschanged = speakCommand;
       return;
     }
-    
+
     setShowActionImage(true);
     setTimeout(() => {
       const utterance = new SpeechSynthesisUtterance(currentCommand.text);
       utterance.voice = voices.find((voice) => voice.name.includes("Male")) || voices[0];
-      
+
       setIsSpeaking(true);
       setShowGoodJob(false);
-      
+
       utterance.onend = () => {
         setIsSpeaking(false);
       };
-      
+
       speechSynthesis.speak(utterance);
     }, 100); // Small delay to ensure state updates first
   };
@@ -100,9 +100,7 @@ export default function SimonSaysGame() {
         setShowActionImage(false);
         setShowGoodJob(false);
     }
-};
-
-
+  };
 
   const resetGame = () => {
     setGameStarted(false);
@@ -118,6 +116,9 @@ export default function SimonSaysGame() {
 
   const startLevel = (level) => {
     setCurrentLevel(level);
+  };
+
+  const startGame = () => {
     setGameStarted(true);
     setScore(0);   // Reset score for new level
     setAttempts(0); // Reset attempts for new level
@@ -158,7 +159,17 @@ export default function SimonSaysGame() {
                 </button>
               ))}
             </div>
-          ) : null
+          ) : (
+            <div>
+              <h2 className="text-lg mb-4">Level {currentLevel} Selected</h2>
+              <button
+                onClick={startGame}
+                className="bg-green-500 text-white px-4 py-2 rounded-xl m-2 hover:bg-green-600"
+              >
+                Start Game
+              </button>
+            </div>
+          )
         ) : (
           <>
             <img
