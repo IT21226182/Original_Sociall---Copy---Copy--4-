@@ -5,7 +5,7 @@ import simonWave from "./images/simon4.gif";
 import simonSpin from "./images/simon5.gif";
 import simonSad from "./images/simon4.gif";
 import goodJobImage from "./images/simon4.gif";
-import goodJobSound from "./images/clap.wav";
+import goodJobSound from "./images/aw.mp3";
 
 const levels = {
   1: [
@@ -47,19 +47,20 @@ export default function SimonSaysGame() {
       return;
     }
     
-    const utterance = new SpeechSynthesisUtterance(currentCommand.text);
-    utterance.voice = voices.find((voice) => voice.name.includes("Male")) || voices[0];
-    
-    setIsSpeaking(true);
-    setShowActionImage(false);
-    setShowGoodJob(false);
-    
-    utterance.onend = () => {
-      setIsSpeaking(false);
-      setShowActionImage(true);
-    };
-    
-    speechSynthesis.speak(utterance);
+    setShowActionImage(true);
+    setTimeout(() => {
+      const utterance = new SpeechSynthesisUtterance(currentCommand.text);
+      utterance.voice = voices.find((voice) => voice.name.includes("Male")) || voices[0];
+      
+      setIsSpeaking(true);
+      setShowGoodJob(false);
+      
+      utterance.onend = () => {
+        setIsSpeaking(false);
+      };
+      
+      speechSynthesis.speak(utterance);
+    }, 100); // Small delay to ensure state updates first
   };
 
   useEffect(() => {
@@ -88,17 +89,20 @@ export default function SimonSaysGame() {
 
   const moveToNextCommand = () => {
     if (currentIndex + 1 >= levels[currentLevel].length) {
-      const finalScorePercentage = Math.round((score / levels[currentLevel].length) * 100);
-      setFinalScore(finalScorePercentage);
-      alert(`Game Over! Final Score: ${finalScorePercentage}%`);
-      resetGame();
+        // Correct score percentage calculation
+        const finalScorePercentage = attempts > 0 ? Math.round((score / levels[currentLevel].length) * 100) : 0;
+        setFinalScore(finalScorePercentage);
+        alert(`Level ${currentLevel} Complete! Score: ${finalScorePercentage}%`);
+        resetGame();
     } else {
-      setCurrentIndex((prevIndex) => prevIndex + 1);
-      setActionStatus("");
-      setShowActionImage(false);
-      setShowGoodJob(false);
+        setCurrentIndex((prevIndex) => prevIndex + 1);
+        setActionStatus("");
+        setShowActionImage(false);
+        setShowGoodJob(false);
     }
-  };
+};
+
+
 
   const resetGame = () => {
     setGameStarted(false);
@@ -110,6 +114,18 @@ export default function SimonSaysGame() {
     setShowActionImage(false);
     setShowGoodJob(false);
     setCurrentLevel(null);
+  };
+
+  const startLevel = (level) => {
+    setCurrentLevel(level);
+    setGameStarted(true);
+    setScore(0);   // Reset score for new level
+    setAttempts(0); // Reset attempts for new level
+    setCurrentIndex(0);
+    setActionStatus("");
+    setFinalScore(null);
+    setShowActionImage(false);
+    setShowGoodJob(false);
   };
 
   const getImageForAction = () => {
@@ -135,21 +151,14 @@ export default function SimonSaysGame() {
               {[1, 2, 3].map((level) => (
                 <button
                   key={level}
-                  onClick={() => setCurrentLevel(level)}
+                  onClick={() => startLevel(level)}
                   className="bg-blue-500 text-white px-4 py-2 rounded-xl m-2 hover:bg-blue-600"
                 >
                   Level {level}
                 </button>
               ))}
             </div>
-          ) : (
-            <button
-              onClick={() => setGameStarted(true)}
-              className="bg-blue-500 text-white px-6 py-3 rounded-xl hover:bg-blue-600 text-lg"
-            >
-              Start Game 🎮
-            </button>
-          )
+          ) : null
         ) : (
           <>
             <img
