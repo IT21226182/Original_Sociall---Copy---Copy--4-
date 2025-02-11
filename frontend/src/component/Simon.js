@@ -8,6 +8,8 @@ import goodJobImage from "./images/simon4.gif";
 import goodJobSound from "./images/aw.mp3";
 import wrongImage from "./images/dislike.jpg";
 import wrongSound from "./images/no.wav";
+import SocialHeader from './SocialHeader';
+
 
 const levels = {
   1: [
@@ -147,6 +149,8 @@ export default function SimonSaysGame() {
   };
 
   return (
+    <>
+    <SocialHeader />
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-6">
       <div className="bg-white shadow-lg rounded-2xl p-6 w-full max-w-md text-center">
         <h1 className="text-xl font-bold mb-4">Simon Says Game</h1>
@@ -203,5 +207,6 @@ export default function SimonSaysGame() {
         )}
       </div>
     </div>
+    </>
   );
 }
