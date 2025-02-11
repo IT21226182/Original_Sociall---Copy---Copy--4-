@@ -6,6 +6,8 @@ import simonSpin from "./images/simon5.gif";
 import simonSad from "./images/simon4.gif";
 import goodJobImage from "./images/simon4.gif";
 import goodJobSound from "./images/aw.mp3";
+import wrongImage from "./images/dislike.jpg";
+import wrongSound from "./images/no.wav";
 
 const levels = {
   1: [
@@ -81,6 +83,10 @@ export default function SimonSaysGame() {
       audio.play();
     } else {
       setActionStatus("incorrect");
+      // Play the wrong sound and image when "Child Didn't"
+      const wrongAudio = new Audio(wrongSound);
+      wrongAudio.play();
+      setShowActionImage(false); // Hide the action image if incorrect
     }
 
     setAttempts(prevAttempts => prevAttempts + 1);
@@ -135,7 +141,7 @@ export default function SimonSaysGame() {
     } else if (showGoodJob) {
       return goodJobImage;
     } else if (actionStatus === "incorrect") {
-      return simonSad;
+      return wrongImage; // Show wrong image if incorrect
     }
     return currentCommand.actionImage || simonTalking;
   };
