@@ -3,13 +3,10 @@ import simonTalking from "./images/simon.gif";
 import simonTouchNose from "./images/hi.gif";
 import simonWave from "./images/simon4.gif";
 import simonSpin from "./images/simon5.gif";
-import simonSad from "./images/simon4.gif";
+import simonSad from "./images/dislike.jpg";
 import goodJobImage from "./images/simon4.gif";
 import goodJobSound from "./images/aw.mp3";
-import wrongImage from "./images/dislike.jpg";
-import wrongSound from "./images/no.wav";
-import SocialHeader from './SocialHeader';
-
+import wrongSound from "./images/no.wav";  // Add wrong sound here
 
 const levels = {
   1: [
@@ -41,6 +38,7 @@ export default function SimonSaysGame() {
   const [actionStatus, setActionStatus] = useState("");
   const [finalScore, setFinalScore] = useState(null);
   const [showGoodJob, setShowGoodJob] = useState(false);
+  const [showIncorrectImage, setShowIncorrectImage] = useState(false);  // New state for incorrect image
 
   const currentCommand = levels[currentLevel]?.[currentIndex] || {};
 
@@ -58,13 +56,14 @@ export default function SimonSaysGame() {
 
       setIsSpeaking(true);
       setShowGoodJob(false);
+      setShowIncorrectImage(false);  // Reset incorrect image
 
       utterance.onend = () => {
         setIsSpeaking(false);
       };
 
       speechSynthesis.speak(utterance);
-    }, 100); // Small delay to ensure state updates first
+    }, 100);
   };
 
   useEffect(() => {
@@ -80,15 +79,17 @@ export default function SimonSaysGame() {
     if (isCorrect === isValid) {
       setScore(prevScore => prevScore + 1);
       setActionStatus("correct");
+
+      // Show "Good Job" image and sound for correct responses
       setShowGoodJob(true);
       const audio = new Audio(goodJobSound);
       audio.play();
     } else {
       setActionStatus("incorrect");
-      // Play the wrong sound and image when "Child Didn't"
-      const wrongAudio = new Audio(wrongSound);
-      wrongAudio.play();
-      setShowActionImage(false); // Hide the action image if incorrect
+      setShowIncorrectImage(true);  // Show the incorrect image
+      const audio = new Audio(wrongSound);  // Play the wrong sound
+      audio.play();
+      setShowGoodJob(false);
     }
 
     setAttempts(prevAttempts => prevAttempts + 1);
@@ -97,16 +98,16 @@ export default function SimonSaysGame() {
 
   const moveToNextCommand = () => {
     if (currentIndex + 1 >= levels[currentLevel].length) {
-        // Correct score percentage calculation
-        const finalScorePercentage = attempts > 0 ? Math.round((score / levels[currentLevel].length) * 100) : 0;
-        setFinalScore(finalScorePercentage);
-        alert(`Level ${currentLevel} Complete! Score: ${finalScorePercentage}%`);
-        resetGame();
+      const finalScorePercentage = attempts > 0 ? Math.round((score / levels[currentLevel].length) * 100) : 0;
+      setFinalScore(finalScorePercentage);
+      alert(`Level ${currentLevel} Complete! Score: ${finalScorePercentage}%`);
+      resetGame();
     } else {
-        setCurrentIndex((prevIndex) => prevIndex + 1);
-        setActionStatus("");
-        setShowActionImage(false);
-        setShowGoodJob(false);
+      setCurrentIndex((prevIndex) => prevIndex + 1);
+      setActionStatus("");
+      setShowActionImage(false);
+      setShowGoodJob(false);
+      setShowIncorrectImage(false);  // Reset incorrect image
     }
   };
 
@@ -119,6 +120,7 @@ export default function SimonSaysGame() {
     setFinalScore(null);
     setShowActionImage(false);
     setShowGoodJob(false);
+    setShowIncorrectImage(false);  // Reset incorrect image
     setCurrentLevel(null);
   };
 
@@ -128,13 +130,14 @@ export default function SimonSaysGame() {
 
   const startGame = () => {
     setGameStarted(true);
-    setScore(0);   // Reset score for new level
-    setAttempts(0); // Reset attempts for new level
+    setScore(0);
+    setAttempts(0);
     setCurrentIndex(0);
     setActionStatus("");
     setFinalScore(null);
     setShowActionImage(false);
     setShowGoodJob(false);
+    setShowIncorrectImage(false);  // Reset incorrect image
   };
 
   const getImageForAction = () => {
@@ -142,15 +145,13 @@ export default function SimonSaysGame() {
       return simonTalking;
     } else if (showGoodJob) {
       return goodJobImage;
-    } else if (actionStatus === "incorrect") {
-      return wrongImage; // Show wrong image if incorrect
+    } else if (showIncorrectImage) {
+      return simonSad;  // Display the sad image when incorrect
     }
     return currentCommand.actionImage || simonTalking;
   };
 
   return (
-    <>
-    <SocialHeader />
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-6">
       <div className="bg-white shadow-lg rounded-2xl p-6 w-full max-w-md text-center">
         <h1 className="text-xl font-bold mb-4">Simon Says Game</h1>
@@ -207,6 +208,5 @@ export default function SimonSaysGame() {
         )}
       </div>
     </div>
-    </>
   );
 }
