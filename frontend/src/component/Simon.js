@@ -7,12 +7,16 @@ import simonSad from "./images/dislike.jpg";
 import goodJobImage from "./images/simon4.gif";
 import goodJobSound from "./images/aw.mp3";
 import wrongSound from "./images/no.wav";  // Add wrong sound here
+import hugImage from "./images/hug.gif";
+import jumpImage from "./images/jumpy.gif";
+import SocialHeader from './SocialHeader';
+import downloadImg from './images/sback.jpg';
 
 const levels = {
   1: [
     { text: "Simon says, say hello", valid: true, actionImage: simonTouchNose },
-    { text: "Jump three times", valid: false, actionImage: simonSad },
-    { text: "Simon says give a comforting hug!", valid: true, actionImage: simonWave },
+    { text: "Jump three times", valid: false, actionImage: jumpImage },
+    { text: "Simon says give a comforting hug!", valid: true, actionImage: hugImage },
   ],
   2: [
     { text: "Clap your hands", valid: false, actionImage: simonSad },
@@ -151,20 +155,84 @@ export default function SimonSaysGame() {
     return currentCommand.actionImage || simonTalking;
   };
 
+  const buttonStyle = {
+    backgroundImage: "linear-gradient(125deg,#1C325B,#4A628A)",
+    color: "#fff",
+    padding: "12px 20px",
+    borderRadius: "5px",
+    border: "none",
+    cursor: "pointer",
+    fontSize: "16px",
+    width: "20%",
+    marginTop: "18px",
+    marginLeft: "600px",
+    marginRight: "100px", // Add this to center the button
+    display: "block",   // Ensure it's treated as a block element
+    textAlign: "center",
+};
+
+const buttonStyle1 = {
+  backgroundImage: "#FF0000",
+  color: "#FF0000",
+  padding: "12px 20px",
+  borderRadius: "5px",
+  border: "none",
+  cursor: "pointer",
+  fontSize: "16px",
+  width: "20%",
+  marginTop: "5px", 
+  marginLeft: "600px",
+  marginRight: "100px", // Add this to center the button
+  display: "block",   // Ensure it's treated as a block element
+  textAlign: "center",
+};
+
+const buttonStyle2 = {
+  backgroundImage: "#008000",
+  color: "#008000",
+  padding: "12px 20px",
+  borderRadius: "15px",
+  border: "none",
+  cursor: "pointer",
+  fontSize: "16px",
+  width: "20%",
+  marginTop: "15px",
+  marginLeft: "600px",
+  marginRight: "100px", // Add this to center the button
+  display: "block",   // Ensure it's treated as a block element
+  textAlign: "center",
+};
+
+
+
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-6">
-      <div className="bg-white shadow-lg rounded-2xl p-6 w-full max-w-md text-center">
-        <h1 className="text-xl font-bold mb-4">Simon Says Game</h1>
+    <>
+    
+    <div style={{
+      //backgroundImage:`url("./images/sback.jpg")`,
+      backgroundImage: `url(${downloadImg})`,
+      backgroundRepeat:"no-repeat",
+      backgroundSize:"cover",
+      width: '100vw',
+    height: '300vh'
+      
+}}>
+  <SocialHeader />
+  {/* <div className="flex flex-col items-center justify-center min-h-screen bg-blue-200 p-6">
+  <div className="bg-yellow-100 shadow-lg rounded-2xl p-6 w-full max-w-md text-center"> */}
+
+     <center>   <h1 className="text-xl font-bold mb-4">Simon Says Game</h1></center>
 
         {!gameStarted ? (
           currentLevel === null ? (
             <div>
-              <h2 className="text-lg mb-4">Select Level</h2>
+         <center>   <h2 >Select a Level</h2></center> 
               {[1, 2, 3].map((level) => (
                 <button
+                style={buttonStyle}
                   key={level}
                   onClick={() => startLevel(level)}
-                  className="bg-blue-500 text-white px-4 py-2 rounded-xl m-2 hover:bg-blue-600"
+                  //className="bg-blue-500 text-white px-4 py-2 rounded-xl m-2 hover:bg-blue-600"
                 >
                   Level {level}
                 </button>
@@ -172,10 +240,11 @@ export default function SimonSaysGame() {
             </div>
           ) : (
             <div>
-              <h2 className="text-lg mb-4">Level {currentLevel} Selected</h2>
+              <center><h2 >Level {currentLevel} Selected</h2></center>
               <button
+              style={buttonStyle}
                 onClick={startGame}
-                className="bg-green-500 text-white px-4 py-2 rounded-xl m-2 hover:bg-green-600"
+               // className="bg-green-500 text-white px-4 py-2 rounded-xl m-2 hover:bg-green-600"
               >
                 Start Game
               </button>
@@ -183,30 +252,35 @@ export default function SimonSaysGame() {
           )
         ) : (
           <>
+          <center>
             <img
               src={getImageForAction()}
               alt="Simon Character"
-              className="w-32 h-32 mx-auto mb-4 transition-all duration-300"
+              
             />
-            <p className="text-lg mb-4">{currentCommand.text}</p>
+            <p className="text-lg mb-4">{currentCommand.text}</p> </center>
             <div className="flex space-x-4">
               <button
+              style={buttonStyle2}
                 onClick={() => handleResponse(true)}
-                className="bg-green-500 text-white px-4 py-2 rounded-xl hover:bg-green-600"
+                // className="bg-green-500 text-white px-4 py-2 rounded-xl hover:bg-green-600"
               >
                 Child Did ✅
               </button>
               <button
+              style={buttonStyle1}
                 onClick={() => handleResponse(false)}
-                className="bg-red-500 text-white px-4 py-2 rounded-xl hover:bg-red-600"
+                // className="bg-red-500 text-white px-4 py-2 rounded-xl hover:bg-red-600"
               >
                 Child Didn't ❌
               </button>
             </div>
-            <p className="mt-4 text-gray-700">Score: {score} | Attempts: {attempts}/{levels[currentLevel].length}</p>
+           <center> <p >Score: {score} | Attempts: {attempts}/{levels[currentLevel].length}</p> </center>
           </>
         )}
       </div>
-    </div>
+    {/* </div>
+    </div> */}
+    </>
   );
 }

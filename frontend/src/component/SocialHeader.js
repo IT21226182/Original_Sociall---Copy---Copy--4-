@@ -27,7 +27,9 @@ const SocialHeader =()=>{
                 <li className="nav-item">
                   <Link to="/simon" className="nav-link" style={lableStyle}>Improvement Activity</Link>
                 </li>
-      
+                <li className="nav-item">
+                  <Link to="/progres" className="nav-link" style={lableStyle}>Progress Record</Link>
+                </li>
                 <br />
               </ul>
             </div>
