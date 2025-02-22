@@ -17,17 +17,25 @@ const levels = {
     { text: "Simon says, say hello", valid: true, actionImage: simonTouchNose },
     { text: "Jump three times", valid: false, actionImage: jumpImage },
     { text: "Simon says give a comforting hug!", valid: true, actionImage: hugImage },
+    { text: "Simon says give a comforting hug!", valid: true, actionImage: hugImage },
+    { text: "Simon says give a comforting hug!", valid: true, actionImage: hugImage },
+
+
   ],
   2: [
     { text: "Clap your hands", valid: false, actionImage: simonSad },
     { text: "Simon says, Show me a happy face!", valid: true, actionImage: simonSpin },
     { text: "Simon says, Look at my eyes", valid: true, actionImage: simonSpin },
+    { text: "Simon says give a comforting hug!", valid: true, actionImage: hugImage },
+    { text: "Simon says give a comforting hug!", valid: true, actionImage: hugImage },
   ],
   3: [
     { text: "Simon says, Give a high-five", valid: true, actionImage: simonSpin },
     { text: "Simon says, Say 'thank you' with a smile", valid: true, actionImage: simonSpin },
     { text: "Simon says, Raise your hand and wait!", valid: true, actionImage: simonSpin },
     { text: "Simon says, Say 'I like your drawing!' to a mom!", valid: true, actionImage: simonSpin },
+    { text: "Simon says give a comforting hug!", valid: true, actionImage: hugImage },
+    { text: "Simon says give a comforting hug!", valid: true, actionImage: hugImage },
   ],
 };
 
@@ -79,41 +87,46 @@ export default function SimonSaysGame() {
   const handleResponse = (isCorrect) => {
     if (!gameStarted) return;
 
-    const isValid = currentCommand.valid;
-    if (isCorrect === isValid) {
-      setScore(prevScore => prevScore + 1);
-      setActionStatus("correct");
+    const isSimonSays = currentCommand.text.startsWith("Simon says");
+    const newAttempts = attempts + 1; // Track attempts correctly before updating state
 
-      // Show "Good Job" image and sound for correct responses
-      setShowGoodJob(true);
-      const audio = new Audio(goodJobSound);
-      audio.play();
+    if ((isSimonSays && isCorrect) || (!isSimonSays && !isCorrect)) {
+        setScore(prevScore => prevScore + 1);
+        setActionStatus("correct");
+        setShowGoodJob(true);
+        new Audio(goodJobSound).play();
     } else {
-      setActionStatus("incorrect");
-      setShowIncorrectImage(true);  // Show the incorrect image
-      const audio = new Audio(wrongSound);  // Play the wrong sound
-      audio.play();
-      setShowGoodJob(false);
+        setActionStatus("incorrect");
+        setShowIncorrectImage(true);
+        new Audio(wrongSound).play();
+        setShowGoodJob(false);
     }
 
-    setAttempts(prevAttempts => prevAttempts + 1);
-    setTimeout(moveToNextCommand, 2000);
-  };
+    setAttempts(newAttempts); // Ensure the correct attempts count is used
+    setTimeout(() => moveToNextCommand(newAttempts), 2000);
+};
 
-  const moveToNextCommand = () => {
+const moveToNextCommand = (updatedAttempts) => {
+    console.log(`Score: ${score}, Attempts: ${updatedAttempts}`);
+
     if (currentIndex + 1 >= levels[currentLevel].length) {
-      const finalScorePercentage = attempts > 0 ? Math.round((score / levels[currentLevel].length) * 100) : 0;
-      setFinalScore(finalScorePercentage);
-      alert(`Level ${currentLevel} Complete! Score: ${finalScorePercentage}%`);
-      resetGame();
+        const finalScorePercentage = updatedAttempts > 0 ? Math.round((score / updatedAttempts) * 100) : 0;
+        setFinalScore(finalScorePercentage);
+        alert(`Level ${currentLevel} Complete! Score: ${finalScorePercentage}%`);
+        console.log(`Calculated Percentage: ${(score / updatedAttempts) * 100}`);
+        resetGame();
     } else {
-      setCurrentIndex((prevIndex) => prevIndex + 1);
-      setActionStatus("");
-      setShowActionImage(false);
-      setShowGoodJob(false);
-      setShowIncorrectImage(false);  // Reset incorrect image
+        setCurrentIndex(prevIndex => prevIndex + 1);
+        setActionStatus("");
+        setShowActionImage(false);
+        setShowGoodJob(false);
+        setShowIncorrectImage(false);
     }
-  };
+};
+
+
+
+
 
   const resetGame = () => {
     setGameStarted(false);
