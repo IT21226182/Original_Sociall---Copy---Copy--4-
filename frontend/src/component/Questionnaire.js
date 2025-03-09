@@ -22,6 +22,8 @@ export default function Questionnaire() {
   const [q10, setQ10] = useState("");
 
   const [listening, setListening] = useState(null);
+  const [result, setResult] = useState(""); // State to store the risk prediction result
+  const [showPopup, setShowPopup] = useState(false); // State to control popup visibility
 
   const { lang } = useParams();
   const [translatedLabels, setTranslatedLabels] = useState({});
@@ -32,20 +34,22 @@ export default function Questionnaire() {
     const translations = {
       english: {
         title: "Evaluation Form",
-        q1: "1.	Does your child make eye contact during conversations or interactions with family members or visitors?",
-        q2: "2.	Does your child get scared or react strongly to common household noises, such as grinding machines or temple/church bells?",
-        q3: "3.	Does your child prefer playing alone rather than joining other children in activities?",
-        q4: "4.	Does your child repeat words or phrases that seem out of context, like TV dialogues or songs?",
-        q5: "5.	Can your child understand simple instructions given ,such as 'Give the book to Amma' or 'Bring your slippers'?",
-        q6: "6.	How does your child react when you call him/her by name during daily activities, such as at meal times or play?",
-        q7: "7.	How does your child behave in crowded places like markets, bus stands, or festivals?",
-        q8: "8.	How does your child let you know when he/she is hungry, thirsty, or wants something specific? ",
-        q9: "9.	What does your child usually do when he/she is playing with objects like toys or household items? ",
-        q10: "10.	How does your child react when asked to do something new or unfamiliar at home? ",
+        q1: "1. Does your child make eye contact during conversations or interactions with family members or visitors?",
+        q2: "2. Does your child get scared or react strongly to common household noises, such as grinding machines or temple/church bells?",
+        q3: "3. Does your child prefer playing alone rather than joining other children in activities?",
+        q4: "4. Does your child repeat words or phrases that seem out of context, like TV dialogues or songs?",
+        q5: "5. Can your child understand simple instructions given, such as 'Give the book to Amma' or 'Bring your slippers'?",
+        q6: "6. How does your child react when you call him/her by name during daily activities, such as at meal times or play?",
+        q7: "7. How does your child behave in crowded places like markets, bus stands, or festivals?",
+        q8: "8. How does your child let you know when he/she is hungry, thirsty, or wants something specific?",
+        q9: "9. What does your child usually do when he/she is playing with objects like toys or household items?",
+        q10: "10. How does your child react when asked to do something new or unfamiliar at home?",
         yes: "Yes",
         no: "No",
         speak: "🔊 Use your voice",
         submit: "Submit",
+        resultMessage: "Risk Prediction:",
+        close: "Close",
       },
       sinhala: {
         title: "ඇගයුම් පෝරමය",
@@ -61,8 +65,10 @@ export default function Questionnaire() {
         q10: "10. නිවසේදී අලුත් හෝ නුහුරු දෙයක් කිරීමට ඔබේ දරුවා ප්‍රතිචාරය දක්වන්නේ කෙසේද?",
         yes: "ඔව්",
         no: "නැත",
-        speak: "🔊 හඬ භාවිතය ",
+        speak: "🔊 හඬ භාවිතය",
         submit: "ඉදිරියට යන්න",
+        resultMessage: "අවදානම් අනාවැකිය:",
+        close: "වසන්න",
       },
       tamil: {
         title: "குழந்தை தனித்துவம் மதிப்பீடு",
@@ -75,11 +81,13 @@ export default function Questionnaire() {
         q7: "7. சந்தைகள், பேருந்து நிலையங்கள் அல்லது திருவிழாக்கள் போன்ற நெரிசலான இடங்களில் உங்கள் குழந்தை எப்படி நடந்து கொள்கிறது?",
         q8: "8. உங்கள் பிள்ளை பசியாக இருக்கும்போது, ​​தாகமாக இருக்கும்போது அல்லது குறிப்பிட்ட ஒன்றை விரும்பும்போது எப்படி உங்களுக்குத் தெரியப்படுத்துவார்?",
         q9: "9. உங்கள் பிள்ளை பொம்மைகள் அல்லது வீட்டுப் பொருட்கள் போன்ற பொருட்களை வைத்து விளையாடும்போது பொதுவாக என்ன செய்வார்?",
-        q10: "10.	How does your child react when asked to do something new or unfamiliar at home? ",
+        q10: "10. வீட்டில் புதிய அல்லது அறிமுகமில்லாத ஒன்றை செய்யும்படி கேட்கப்படும் போது உங்கள் குழந்தை எவ்வாறு பதிலளிக்கிறார்?",
         yes: "ஆம்",
         no: "இல்லை",
         speak: "🔊 குரல் பயன்படுத்த",
         submit: "சமர்ப்பிக்கவும்",
+        resultMessage: "அபாயம் கணிப்பு:",
+        close: "மூடு",
       },
     };
 
@@ -113,34 +121,58 @@ export default function Questionnaire() {
   recognition.onspeechend = () => recognition.stop();
 
   // Submit form
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
 
     const newSales = { q1, q2, q3, q4, q5, q6, q7, q8, q9, q10 };
-    axios.post("http://localhost:8070/Sroute/add", newSales)
-      .then(() => {
-        alert("Form submitted successfully!");
-        navigate("/view");
-      })
-      .catch((err) => alert("Error submitting the form: " + err));
+
+    try {
+      // Save the form data to the database
+      await axios.post("http://localhost:8070/Sroute/add", newSales);
+
+      // Prepare data for risk prediction
+      const yesNoAnswers = [q1, q2, q3, q4, q5].map((answer) => (answer === "yes" ? 1 : 0));
+      const openEndedResponses = [q6, q7, q8, q9, q10];
+
+      // Get sentiment results from Flask
+      const sentimentResponse = await axios.post("http://localhost:5000/sentiment", {
+        responses: openEndedResponses,
+      });
+      const sentimentResults = sentimentResponse.data.sentiments;
+
+      // Get risk prediction from Flask
+      const riskResponse = await axios.post("http://localhost:5000/risk-prediction", {
+        yes_no_answers: yesNoAnswers,
+        sentiment_results: sentimentResults,
+      });
+      const riskPrediction = riskResponse.data.risk_prediction;
+
+      // Set the result state and show the popup
+      setResult(riskPrediction === 1 ? "Risk Detected" : "No Risk Detected");
+      setShowPopup(true); // Show the popup
+    } catch (err) {
+      alert("Error submitting the form: " + err.message);
+    }
   }
+
+  // Close the popup
+  const closePopup = () => {
+    setShowPopup(false);
+  };
 
   // Styles
   const containerStyle = {
     padding: "20px",
     backgroundColor: "#E8EFF4",
-    overflow: 'hidden',
-    boxShadow: '0 2px 20px',
-    borderRadius: '$radius',
-    transition: 'transform 200ms ease-in',
-    padding: '20px',
-    backdropFilter: 'blur(50px)',
-   // background:
-      //'linear-gradient(rgba(255, 255, 255, 0.7),rgba(255, 255, 255, 0.3))',
+    overflow: "hidden",
+    boxShadow: "0 2px 20px",
+    borderRadius: "$radius",
+    transition: "transform 200ms ease-in",
+    padding: "20px",
+    backdropFilter: "blur(50px)",
     maxWidth: "1000px",
     margin: "0 auto",
     marginTop: "50px",
-    //display: "flex",
     flexDirection: "column",
     alignItems: "center",
   };
@@ -169,90 +201,119 @@ export default function Questionnaire() {
     fontSize: "16px",
     width: "20%",
     marginTop: "15px",
-    marginLeft: "auto", // Automatically move it to the right
-    display: "block",   // Ensure it's treated as a block element
-};
+    marginLeft: "auto",
+    display: "block",
+  };
   const speakButtonStyle = {
-    backgroundColor: "transparent",  
+    backgroundColor: "transparent",
     padding: "10px 20px",
     borderRadius: "5px",
-    border: "none",  
+    border: "none",
     cursor: "pointer",
     fontSize: "16px",
     marginTop: "10px",
-    outline: "none",  
-    boxShadow: "none", 
+    outline: "none",
+    boxShadow: "none",
   };
 
-  // Specific styles for last 5 fields
+  // Define lastFieldStyle
   const lastFieldStyle = {
     display: "flex",
     flexDirection: "column",
     alignItems: "flex-start",
     width: "100%",
     marginBottom: "20px",
-    
+  };
+
+  // Popup styles
+  const popupStyle = {
+    position: "fixed",
+    top: "50%",
+    left: "50%",
+    transform: "translate(-50%, -50%)",
+    backgroundColor: "#fff",
+    padding: "20px",
+    borderRadius: "10px",
+    boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
+    zIndex: 1000,
+    textAlign: "center",
+  };
+  const overlayStyle = {
+    position: "fixed",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    zIndex: 999,
   };
 
   return (
     <>
-    
-    
-    
-    
-    
-    <div style={{
-      //backgroundImage:`url("./images/sback.jpg")`,
-      backgroundImage: `url(${downloadImg})`,
-      backgroundRepeat:"no-repeat",
-      backgroundSize:"cover",
-      width: '100vw',
-    height: '300vh'
-      
-}}>
-  <SocialHeader />
-      <h3 style={{ textAlign: "center" ,fontWeight:"10px"}}>{translatedLabels.title}</h3>
-      <form onSubmit={handleSubmit} style={containerStyle}>
-        {[...Array(5).keys()].map((i) => (
-          <div key={i} style={{ width: "100%" }}>
-            <label style={labelStyle}>{translatedLabels[`q${i + 1}`]}</label>
-            <select
-              value={eval(`q${i + 1}`)}
-              onChange={(e) => eval(`setQ${i + 1}(e.target.value)`)}
+      <div
+        style={{
+          backgroundImage: `url(${downloadImg})`,
+          backgroundRepeat: "no-repeat",
+          backgroundSize: "cover",
+          width: "100vw",
+          height: "300vh",
+        }}
+      >
+        <SocialHeader />
+        <h3 style={{ textAlign: "center", fontWeight: "10px" }}>{translatedLabels.title}</h3>
+        <form onSubmit={handleSubmit} style={containerStyle}>
+          {[...Array(5).keys()].map((i) => (
+            <div key={i} style={{ width: "100%" }}>
+              <label style={labelStyle}>{translatedLabels[`q${i + 1}`]}</label>
+              <select
+                value={eval(`q${i + 1}`)}
+                onChange={(e) => eval(`setQ${i + 1}(e.target.value)`)}
+                style={inputStyle}
+              >
+                <option value="">{translatedLabels.yes}/{translatedLabels.no}</option>
+                <option value="yes">{translatedLabels.yes}</option>
+                <option value="no">{translatedLabels.no}</option>
+              </select>
+            </div>
+          ))}
 
-              style={inputStyle}
-            >
-              <option value="">{translatedLabels.yes}/{translatedLabels.no}</option>
-              <option value="yes">{translatedLabels.yes}</option>
-              <option value="no">{translatedLabels.no}</option>
-            </select>
-          </div>
-        ))}
+          {[...Array(5).keys()].map((i) => (
+            <div key={i + 5} style={lastFieldStyle}>
+              <label style={labelStyle}>{translatedLabels[`q${i + 6}`]}</label>
+              <textarea
+                value={eval(`q${i + 6}`)}
+                onChange={(e) => eval(`setQ${i + 6}(e.target.value)`)}
+                style={inputStyle}
+                rows="2"
+              />
+              <button
+                type="button"
+                onClick={() => startListening(`q${i + 6}`)}
+                style={speakButtonStyle}
+              >
+                {translatedLabels.speak}
+              </button>
+            </div>
+          ))}
+          <button type="submit" style={buttonStyle}>
+            {translatedLabels.submit}
+          </button>
+        </form>
 
-        {[...Array(5).keys()].map((i) => (
-          <div key={i + 5} style={lastFieldStyle}>
-            <label style={labelStyle}>{translatedLabels[`q${i + 6}`]}</label>
-            <textarea
-              value={eval(`q${i + 6}`)}
-              onChange={(e) => eval(`setQ${i + 6}(e.target.value)`)}
-
-              style={inputStyle}
-              rows="2"
-            />
-            <button
-              type="button"
-              onClick={() => startListening(`q${i + 6}`)}
-              style={speakButtonStyle}
-            >
-              {translatedLabels.speak}
-            </button>
-          </div>
-        ))}
-        <button type="submit" style={buttonStyle}>
-          {translatedLabels.submit}
-        </button>
-      </form>
-    </div>
+        {/* Popup for risk prediction result */}
+        {showPopup && (
+          <>
+            <div style={overlayStyle} onClick={closePopup}></div>
+            <div style={popupStyle}>
+              <h3>{translatedLabels.resultMessage}</h3>
+              <p>{result}</p>
+              <button onClick={closePopup} style={buttonStyle}>
+                {translatedLabels.close}
+              </button>
+            </div>
+          </>
+        )}
+      </div>
     </>
   );
 }
