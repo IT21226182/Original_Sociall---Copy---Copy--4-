@@ -1,4 +1,4 @@
-# risk_preprocessing.py
+# riskpre.py
 from translate import Translator
 from langdetect import detect, DetectorFactory
 import pandas as pd
@@ -36,14 +36,24 @@ def preprocessing_risk(df):
     """
     Preprocesses the input DataFrame for risk prediction.
     """
-    label_encoder = LabelEncoder()
+    # First, translate non-English text to English
+    df = df.applymap(lambda x: translate_to_english(str(x)) if isinstance(x, str) else x)
 
-    # Apply translation and label encoding for text columns
-    for column in df.columns:
-        if df[column].dtype == 'object':  # Check if the column contains text data
-            # Translate text to English
-            df[column] = df[column].apply(translate_to_english)
-            # Apply label encoding
-            df[column] = label_encoder.fit_transform(df[column])
-    
+    # Ensure all values are strings and normalized to lowercase
+    df = df.applymap(lambda x: str(x).strip().lower() if isinstance(x, str) else x)
+
+    # Convert "yes" to 1 and "no" to 0
+    # df = df.replace({"yes": 0, "no": 1})
+    df = df.replace({"yes": 0, "no": 1}).infer_objects(copy=False)
+
+    # Check for any unexpected values
+    if df.isnull().values.any():
+        print("Warning: Missing or unexpected values detected in the input data.")
+
+    # Ensure all columns are treated as integers
+    try:
+        df = df.astype(int)
+    except ValueError as e:
+        print(f"Data type conversion error: {e}")
+
     return df

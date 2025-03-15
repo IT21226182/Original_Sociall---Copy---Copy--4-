@@ -53,8 +53,13 @@ const socialSchema = new Schema({
         type : String,
         required: true
 
+    },
+    
+    risk_prediction: {
+        type: String, 
+        required: false // Optional, since it will be added after the initial save
     }
-
+    
     
 
 

@@ -23,7 +23,8 @@ export default function Questionnaire() {
 
   const [listening, setListening] = useState(null);
   const [result, setResult] = useState(""); // State to store the risk prediction result
-  const [showPopup, setShowPopup] = useState(false); // State to control popup visibility
+  const [showPopup, setShowPopup] = useState(false); // State to control result popup visibility
+  const [isLoading, setIsLoading] = useState(false); // State to track loading state
 
   const { lang } = useParams();
   const [translatedLabels, setTranslatedLabels] = useState({});
@@ -50,6 +51,7 @@ export default function Questionnaire() {
         submit: "Submit",
         resultMessage: "Risk Prediction:",
         close: "Close",
+        waiting: "Waiting for result...",
       },
       sinhala: {
         title: "ඇගයුම් පෝරමය",
@@ -69,6 +71,7 @@ export default function Questionnaire() {
         submit: "ඉදිරියට යන්න",
         resultMessage: "අවදානම් අනාවැකිය:",
         close: "වසන්න",
+        waiting: "ප්‍රතිඵලය ලබා ගැනීමට රැඳී සිටින්න...",
       },
       tamil: {
         title: "குழந்தை தனித்துவம் மதிப்பீடு",
@@ -88,6 +91,7 @@ export default function Questionnaire() {
         submit: "சமர்ப்பிக்கவும்",
         resultMessage: "அபாயம் கணிப்பு:",
         close: "மூடு",
+        waiting: "முடிவுக்காக காத்திருக்கிறது...",
       },
     };
 
@@ -99,11 +103,23 @@ export default function Questionnaire() {
   function startListening(field) {
     setListening(field);
 
+    // Set the language based on the selected language
     if (lang === "sinhala") recognition.lang = "si-LK";
     else if (lang === "tamil") recognition.lang = "ta-LK";
     else recognition.lang = "en-US";
 
-    recognition.start();
+    // Try to start recognition and catch errors if recognition has already started
+    try {
+      recognition.start();
+    } catch (error) {
+      if (error instanceof DOMException && error.code === DOMException.INVALID_STATE_ERR) {
+        console.log("Recording already started.");
+        // Optionally, show an alert or message on the UI
+        alert("Speech Recognition already started.");
+      } else {
+        console.error("An error occurred: ", error);
+      }
+    }
   }
 
   recognition.onresult = (event) => {
@@ -126,38 +142,34 @@ export default function Questionnaire() {
 
     const newSales = { q1, q2, q3, q4, q5, q6, q7, q8, q9, q10 };
 
+    setIsLoading(true); // Set loading state to true
+
     try {
-      // Save the form data to the database
-      await axios.post("http://localhost:8070/Sroute/add", newSales);
+      // Send data to Express.js for analysis and saving
+      const response = await axios.post("http://localhost:8070/Sroute/analyze", newSales);
+      const riskPrediction = response.data.risk_prediction;
 
-      // Prepare data for risk prediction
-      const yesNoAnswers = [q1, q2, q3, q4, q5].map((answer) => (answer === "yes" ? 1 : 0));
-      const openEndedResponses = [q6, q7, q8, q9, q10];
+      // Set the result state with the translated message and show the popup
+      if (lang === "sinhala") {
+        setResult(riskPrediction === 1 ? "අවදානම් හඳුනාගත්තේ" : "අවදානම් හඳුනාගත නොහැකි විය");
+      } else if (lang === "tamil") {
+        setResult(riskPrediction === 1 ? "ஆபத்து கண்டறியப்பட்டது" : "ஆபத்து கண்டறியப்படவில்லை");
+      } else {
+        setResult(riskPrediction === 1 ? "Risk Detected" : "No Risk Detected");
+      }
 
-      // Get sentiment results from Flask
-      const sentimentResponse = await axios.post("http://localhost:5000/sentiment", {
-        responses: openEndedResponses,
-      });
-      const sentimentResults = sentimentResponse.data.sentiments;
-
-      // Get risk prediction from Flask
-      const riskResponse = await axios.post("http://localhost:5000/risk-prediction", {
-        yes_no_answers: yesNoAnswers,
-        sentiment_results: sentimentResults,
-      });
-      const riskPrediction = riskResponse.data.risk_prediction;
-
-      // Set the result state and show the popup
-      setResult(riskPrediction === 1 ? "Risk Detected" : "No Risk Detected");
-      setShowPopup(true); // Show the popup
+      setShowPopup(true); // Show the result popup
     } catch (err) {
       alert("Error submitting the form: " + err.message);
+    } finally {
+      setIsLoading(false); // Reset loading state
     }
   }
 
   // Close the popup
   const closePopup = () => {
     setShowPopup(false);
+    navigate('/view');
   };
 
   // Styles
@@ -271,8 +283,8 @@ export default function Questionnaire() {
                 style={inputStyle}
               >
                 <option value="">{translatedLabels.yes}/{translatedLabels.no}</option>
-                <option value="yes">{translatedLabels.yes}</option>
-                <option value="no">{translatedLabels.no}</option>
+                <option value={translatedLabels.yes}>{translatedLabels.yes}</option>
+                <option value={translatedLabels.no}>{translatedLabels.no}</option>
               </select>
             </div>
           ))}
@@ -295,12 +307,22 @@ export default function Questionnaire() {
               </button>
             </div>
           ))}
-          <button type="submit" style={buttonStyle}>
+          <button type="submit" style={buttonStyle} disabled={isLoading}>
             {translatedLabels.submit}
           </button>
         </form>
 
-        {/* Popup for risk prediction result */}
+        {/* Loading Popup */}
+        {isLoading && (
+          <>
+            <div style={overlayStyle}></div>
+            <div style={popupStyle}>
+              <h3>{translatedLabels.waiting}</h3>
+            </div>
+          </>
+        )}
+
+        {/* Result Popup */}
         {showPopup && (
           <>
             <div style={overlayStyle} onClick={closePopup}></div>

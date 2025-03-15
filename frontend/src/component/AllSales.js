@@ -54,7 +54,8 @@ export default function AllSales() {
     q7,
     q8,
     q9,
-    q10
+    q10,
+    risk_prediction // Add this field
   ) => {
     localStorage.setItem('id', id);
     localStorage.setItem('q1', q1);
@@ -67,6 +68,7 @@ export default function AllSales() {
     localStorage.setItem('q8', q8);
     localStorage.setItem('q9', q9);
     localStorage.setItem('q10', q10);
+    localStorage.setItem('risk_prediction', risk_prediction); // Save prediction result
   };
 
   useEffect(() => {
@@ -121,46 +123,29 @@ export default function AllSales() {
 
   return (
     <>
-      {/* <div
+      <div
         style={{
-          backgroundImage: `url("./images/coffee-beans-2.jpg")`,
+          backgroundImage: `url(${downloadImg})`,
           backgroundRepeat: 'no-repeat',
           backgroundSize: 'cover',
           width: '100vw',
           height: '100vh',
         }}
-      > */}
-      <div style={{
-      //backgroundImage:`url("./images/sback.jpg")`,
-      backgroundImage: `url(${downloadImg})`,
-      backgroundRepeat:"no-repeat",
-      backgroundSize:"cover",
-      width: '100vw',
-    height: '100vh'
-      
-}}>
-          {/* <div style={{
-      backgroundColor: "#B9E5E8",
-      
-    }}> */}
-
-
+      >
         <SocialHeader />
         <div className="d-flex flex-direction-column justify-content-between m-2">
-          <h3 style={{ color: '#1C325B', marginLeft:'100px' }}>Respose submitted</h3>
+          <h3 style={{ color: '#1C325B', marginLeft: '100px' }}>
+            Response submitted
+          </h3>
 
           <div className="mb-3">
-            {/* <input
-              type="text"
-              value={searchTerm}
-              style={searchStyle}
-              placeholder="Search Item name ............."
-              onChange={handleSearch}
-            /> */}
-            <Button 
+            <Button
               variant="success"
               onClick={exportToExcel}
-              style={{ marginRight: '150px', backgroundImage: "linear-gradient(125deg,#1C325B,#4A628A) " }}
+              style={{
+                marginRight: '150px',
+                backgroundImage: 'linear-gradient(125deg,#1C325B,#4A628A)',
+              }}
             >
               Export to Excel
             </Button>
@@ -192,6 +177,8 @@ export default function AllSales() {
                   <strong>9. </strong> {item.q9}
                   <br />
                   <strong>10. </strong> {item.q10}
+                  <br />
+                  <strong>Prediction: </strong> {item.risk_prediction} {/* Add this line */}
                 </p>
                 <div className="d-flex justify-content-between">
                   <a href="/update">
@@ -209,7 +196,8 @@ export default function AllSales() {
                           item.q7,
                           item.q8,
                           item.q9,
-                          item.q10
+                          item.q10,
+                          item.risk_prediction // Pass prediction result
                         )
                       }
                     >

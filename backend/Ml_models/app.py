@@ -4,18 +4,18 @@ import joblib
 import numpy as np
 import pandas as pd
 from sentipre import preprocessing_sentiment, vectorizer
-from riskpre import preprocessing_risk
+from riskpre import preprocessing_risk  # Import updated preprocessing function
 
 # Initialize Flask app
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
 
 # Load the sentiment analysis model
-with open("originalsvm_smodel.pkl", "rb") as f:
+with open("svmpp2.pkl", "rb") as f:
     sentiment_model = joblib.load(f)
 
 # Load the risk prediction model
-with open("randomforestp_model.pkl", "rb") as f:
+with open("randomforest_model_secondtry_v2.pkl", "rb") as f:
     risk_model = joblib.load(f)
 
 # Load stopwords
@@ -67,7 +67,7 @@ def risk_prediction():
     try:
         # Get yes/no answers and sentiment results from the request
         data = request.json
-        yes_no_answers = data.get("yes_no_answers", [])  # List of 5 yes/no answers (1 or 0)
+        yes_no_answers = data.get("yes_no_answers", [])  # List of 5 yes/no answers
         sentiment_results = data.get("sentiment_results", [])  # List of 5 sentiment results (1 or 0)
 
         print("Incoming Yes/No Answers:", yes_no_answers)
@@ -76,22 +76,25 @@ def risk_prediction():
         # Validate input
         if len(yes_no_answers) != 5 or len(sentiment_results) != 5:
             return jsonify({"error": "Please provide exactly 5 yes/no answers and 5 sentiment results."}), 400
+        
+        # Convert yes/no answers into a DataFrame
+        yes_no_df = pd.DataFrame([yes_no_answers], columns=["A1", "A2", "A3", "A4", "A5"])
 
-        # Combine yes/no answers and sentiment results into a single input array
-        combined_input = yes_no_answers + sentiment_results
+        # Preprocess the yes/no answers
+        processed_input = preprocessing_risk(yes_no_df)
+
+        print("Processed Input (Yes/No Answers):", processed_input)
+
+        # Combine processed yes/no answers and sentiment results
+        combined_input = processed_input.values.flatten().tolist() + sentiment_results
 
         print("Combined Input:", combined_input)
 
         # Create a DataFrame with the correct feature names
         input_df = pd.DataFrame([combined_input], columns=["A1", "A2", "A3", "A4", "A5", "A6", "A7", "A8", "A9", "A10"])
 
-        # Preprocess the input data
-        processed_input = preprocessing_risk(input_df)
-
-        print("Processed Input:", processed_input)
-
         # Perform risk prediction
-        risk_prediction = risk_model.predict(processed_input)[0]
+        risk_prediction = risk_model.predict(input_df)[0]
 
         print("Risk Prediction:", risk_prediction)
 
