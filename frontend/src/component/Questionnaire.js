@@ -35,16 +35,16 @@ export default function Questionnaire() {
     const translations = {
       english: {
         title: "Evaluation Form",
-        q1: "1. Does your child make eye contact during conversations or interactions with family members or visitors?",
-        q2: "2. Does your child get scared or react strongly to common household noises, such as grinding machines or temple/church bells?",
-        q3: "3. Does your child prefer playing alone rather than joining other children in activities?",
-        q4: "4. Does your child repeat words or phrases that seem out of context, like TV dialogues or songs?",
+        q1: "1. Does your child point to indicate that s/he wants something? (e.g. a toy that is out of reach) ?",
+        q2: "2. Does your child like to play with other children?",
+        q3: "3. Does your child let you know when he/she is hungry, thirsty, or wants something specfic?",
+        q4: "4. Does your child follow where you are looking? ",
         q5: "5. Can your child understand simple instructions given, such as 'Give the book to Amma' or 'Bring your slippers'?",
-        q6: "6. How does your child react when you call him/her by name during daily activities, such as at meal times or play?",
+        q6: "6. If you or someone else in the family is visibly upset, does your child show signs of wanting to comfort them? (e.g. stroking hair, hugging them)?",
         q7: "7. How does your child behave in crowded places like markets, bus stands, or festivals?",
-        q8: "8. How does your child let you know when he/she is hungry, thirsty, or wants something specific?",
-        q9: "9. What does your child usually do when he/she is playing with objects like toys or household items?",
-        q10: "10. How does your child react when asked to do something new or unfamiliar at home?",
+        q8: "8. Does your child use simple gestures? (e.g. wave goodbye) ",
+        q9: "9. Describe in detail how your child reacts when you call their name. Do they look at you, respond verbally, or show any other behaviors? Are there times when they do not respond?",
+        q10: "10. How does your child make eye contacts during conversations ?",
         yes: "Yes",
         no: "No",
         speak: "🔊 Use your voice",
@@ -54,17 +54,17 @@ export default function Questionnaire() {
         waiting: "Waiting for result...",
       },
       sinhala: {
-        title: "ඇගයුම් පෝරමය",
-        q1: "1. ඔබේ දරුවා පවුලේ සාමාජිකයන් හෝ අමුත්තන් සමඟ සංවාද හෝ අන්තර් ක්‍රියා වලදී ඇස දෙස බලා කතා කරනවාද?",
-        q2: "2. ඇඹරුම් යන්ත්‍ර හෝ පන්සල්/පල්ලි සීනු වැනි සාමාන්‍ය ගෘහස්ථ ශබ්දවලට ඔබේ දරුවා බියට පත් වන්නේද නැතහොත් දැඩි ලෙස ප්‍රතිචාර දක්වනවාද?",
-        q3: "3. ඔබේ දරුවා වෙනත් දරුවන් සමඟ ක්‍රියාකාරකම්වලට සම්බන්ධ වෙනවාට වඩා තනිවම සෙල්ලම් කිරීමට කැමතිද?",
-        q4: "4. ඔබේ දරුවා රූපවාහිනී සංවාද හෝ ගීත වැනි සන්දර්භයෙන් බැහැරව පෙනෙන වචන හෝ වාක්‍ය ඛණ්ඩ නැවත නැවත කියනවාද?",
+        title: "ප්‍රශ්නාවලි පෝරමය",
+        q1: "1. ඔබේ දරුවා යමක් අවශ්‍ය බව පෙන්වීමට ඒ දෙසට අත දිගු කරනවාද? (උදා: ළඟා විය නොහැකි සෙල්ලම් බඩුවක්)?",
+        q2: "2. ඔබේ දරුවා අනෙක් දරුවන් සමඟ එක්වී සෙල්ලම් කිරීමට කැමතිද?",
+        q3: "3. ඔබේ දරුවා ඔහුට/ඇයට බඩගිනි, පිපාසය, හෝ නිශ්චිත  යමක් අවශ්‍ය වූ විට  ඔබට දන්වනවාද?",
+        q4: "4. ඔබේ දරුවා ඔබ බලන දෙස අවදානය යොමු කරනවාද?",
         q5: "5. 'අම්මාට පොත දෙන්න' හෝ 'ඔබේ සෙරෙප්පු රැගෙන එන්න' වැනි සරල උපදෙස් ඔබේ දරුවාට තේරුම් ගත හැකිද?",
-        q6: "6. ආහාර වේලෙහි හෝ ක්‍රීඩා කරන විට වැනි දෛනික ක්‍රියාකාරකම් වලදී ඔබ ඔහුට/ඇයට නමින් කතා කරන විට ඔබේ දරුවා ප්‍රතිචාර දක්වන්නේ කෙසේද?",
-        q7: "7. පොළවල්, බස් නැවතුම් පොළවල් හෝ උත්සව වැනි ජනාකීර්ණ ස්ථානවල ඔබේ දරුවා හැසිරෙන්නේ කෙසේද?",
-        q8: "8. ඔබේ දරුවා ඔහුට/ඇයට බඩගිනි, පිපාසය, හෝ නිශ්චිත යමක් අවශ්‍ය වූ විට ඔහු ඔබට දන්වන්නේ කෙසේද?",
-        q9: "9. ඔබේ දරුවා සෙල්ලම් බඩු හෝ ගෘහ භාණ්ඩ වැනි වස්තූන් සමඟ සෙල්ලම් කරන විට ඔහු/ඇය සාමාන්යයෙන් කරන්නේ කුමක්ද?",
-        q10: "10. නිවසේදී අලුත් හෝ නුහුරු දෙයක් කිරීමට ඔබේ දරුවා ප්‍රතිචාරය දක්වන්නේ කෙසේද?",
+        q6: "6. ඔබ හෝ පවුලේ වෙනත් අයෙකු කලබල වී හෝ දුකට පත්වී ඇත්නම්, ඔබේ දරුවා ඔවුන්ව සනසාලීමට කැමති බවට සලකුණු පෙන්වනවාද?",
+        q7: "7. වෙළඳපොළවල්, බස් නැවතුම්පොළවල් හෝ උත්සව වැනි ජනාකීර්ණ ස්ථානවල ඔබේ දරුවා හැසිරෙන්නේ කෙසේද?",
+        q8: "8. ඔබේ දරුවා සරල අභිනයන් භාවිතා කරනවාද? (උදා: අත වනමින් සමුගැනීම)?", 
+        q9: "9. ඔබ ඔබේ දරුවාගේ නම අමතන විට ඔහු ප්‍රතිචාර දක්වන ආකාරය විස්තරාත්මකව විස්තර කරන්න. ඔවුන් ඔබ දෙස බලනවාද, වාචිකව ප්‍රතිචාර දක්වනවාද, නැතහොත් වෙනත් හැසිරීම් පෙන්වනවාද? ඔවුන් ප්‍රතිචාර නොදක්වන අවස්ථා තිබේද?",
+        q10: "10. සංවාද අතරතුර ඔබේ දරුවා ඇස් සබදතාවය පවත්වා ගන්නවද?",
         yes: "ඔව්",
         no: "නැත",
         speak: "🔊 හඬ භාවිතය",
@@ -151,11 +151,11 @@ export default function Questionnaire() {
 
       // Set the result state with the translated message and show the popup
       if (lang === "sinhala") {
-        setResult(riskPrediction === 1 ? "අවදානම් හඳුනාගත්තේ" : "අවදානම් හඳුනාගත නොහැකි විය");
+        setResult(riskPrediction === 1 ? "අවදානමක් හඳුනාගෙන ඇත, ඔබට වැඩිදියුණු කිරීමේ ක්‍රියාකාරකම් පරීක්ෂා කළ හැකිය" : "අවදානමක් නැත");
       } else if (lang === "tamil") {
         setResult(riskPrediction === 1 ? "ஆபத்து கண்டறியப்பட்டது" : "ஆபத்து கண்டறியப்படவில்லை");
       } else {
-        setResult(riskPrediction === 1 ? "Risk Detected" : "No Risk Detected");
+        setResult(riskPrediction === 1 ? "Risk Detected, you can Checkout improvement activities" : "No Risk Detected");
       }
 
       setShowPopup(true); // Show the result popup
@@ -206,7 +206,7 @@ export default function Questionnaire() {
   const buttonStyle = {
     backgroundImage: "linear-gradient(125deg,#1C325B,#4A628A)",
     color: "#fff",
-    padding: "12px 20px",
+    padding: "12px 40px",
     borderRadius: "5px",
     border: "none",
     cursor: "pointer",
@@ -214,7 +214,11 @@ export default function Questionnaire() {
     width: "20%",
     marginTop: "15px",
     marginLeft: "auto",
-    display: "block",
+    //display: "block",
+    textAlign: "center",
+    display: "flex", // Ensure flexbox is used
+  justifyContent: "center", // Horizontally center text
+  alignItems: "center", // Vertically center text
   };
   const speakButtonStyle = {
     backgroundColor: "transparent",
@@ -244,7 +248,7 @@ export default function Questionnaire() {
     left: "50%",
     transform: "translate(-50%, -50%)",
     backgroundColor: "#fff",
-    padding: "20px",
+    padding: "40px",
     borderRadius: "10px",
     boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
     zIndex: 1000,
@@ -274,43 +278,43 @@ export default function Questionnaire() {
         <SocialHeader />
         <h3 style={{ textAlign: "center", fontWeight: "10px" }}>{translatedLabels.title}</h3>
         <form onSubmit={handleSubmit} style={containerStyle}>
-          {[...Array(5).keys()].map((i) => (
-            <div key={i} style={{ width: "100%" }}>
-              <label style={labelStyle}>{translatedLabels[`q${i + 1}`]}</label>
-              <select
-                value={eval(`q${i + 1}`)}
-                onChange={(e) => eval(`setQ${i + 1}(e.target.value)`)}
-                style={inputStyle}
-              >
-                <option value="">{translatedLabels.yes}/{translatedLabels.no}</option>
-                <option value={translatedLabels.yes}>{translatedLabels.yes}</option>
-                <option value={translatedLabels.no}>{translatedLabels.no}</option>
-              </select>
-            </div>
-          ))}
+  {[...Array(8).keys()].map((i) => (
+    <div key={i} style={{ width: "100%" }}>
+      <label style={labelStyle}>{translatedLabels[`q${i + 1}`]}</label>
+      <select
+        value={eval(`q${i + 1}`)}
+        onChange={(e) => eval(`setQ${i + 1}(e.target.value)`)}
+        style={inputStyle}
+      >
+        <option value="">{translatedLabels.yes}/{translatedLabels.no}</option>
+        <option value={translatedLabels.yes}>{translatedLabels.yes}</option>
+        <option value={translatedLabels.no}>{translatedLabels.no}</option>
+      </select>
+    </div>
+  ))}
 
-          {[...Array(5).keys()].map((i) => (
-            <div key={i + 5} style={lastFieldStyle}>
-              <label style={labelStyle}>{translatedLabels[`q${i + 6}`]}</label>
-              <textarea
-                value={eval(`q${i + 6}`)}
-                onChange={(e) => eval(`setQ${i + 6}(e.target.value)`)}
-                style={inputStyle}
-                rows="2"
-              />
-              <button
-                type="button"
-                onClick={() => startListening(`q${i + 6}`)}
-                style={speakButtonStyle}
-              >
-                {translatedLabels.speak}
-              </button>
-            </div>
-          ))}
-          <button type="submit" style={buttonStyle} disabled={isLoading}>
-            {translatedLabels.submit}
-          </button>
-        </form>
+  {[...Array(2).keys()].map((i) => (
+    <div key={i + 8} style={lastFieldStyle}>
+      <label style={labelStyle}>{translatedLabels[`q${i + 9}`]}</label>
+      <textarea
+        value={eval(`q${i + 9}`)}
+        onChange={(e) => eval(`setQ${i + 9}(e.target.value)`)}
+        style={inputStyle}
+        rows="2"
+      />
+      <button
+        type="button"
+        onClick={() => startListening(`q${i + 9}`)}
+        style={speakButtonStyle}
+      >
+        {translatedLabels.speak}
+      </button>
+    </div>
+  ))}
+  <button type="submit" style={buttonStyle} disabled={isLoading}>
+    {translatedLabels.submit}
+  </button>
+</form> 
 
         {/* Loading Popup */}
         {isLoading && (

@@ -23,7 +23,6 @@ import ltw7Img from './images/removewavee.png';
 import ltw8Img from './images/removewavee.png';
 import ltw9Img from './images/removewavee.png';
 
-
 import lth1Img from './images/removewavee.png';
 import lth2Img from './images/removewavee.png';
 import lth3Img from './images/removewavee.png';
@@ -36,8 +35,6 @@ import lth9Img from './images/removewavee.png';
 import lth10Img from './images/removewavee.png';
 import lth11Img from './images/removewavee.png';
 import lth12Img from './images/removewavee.png';
-
-
 
 const levels = {
   1: [
@@ -111,6 +108,48 @@ const Modal = ({ finalScore, onClose }) => {
   );
 };
 
+const InstructionsModal = ({ onClose }) => {
+  return (
+    <div style={{
+      position: 'fixed',
+      top: '0',
+      left: '0',
+      width: '100%',
+      height: '100%',
+      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+    }}>
+      <div style={{
+        backgroundColor: '#fff',
+        padding: '20px',
+        borderRadius: '10px',
+        textAlign: 'center',
+      }}>
+        <h2>Instructions</h2>
+        <p>1. Select a level to start the game.</p>
+        <p>2. Follow the commands given by Simon.</p>
+        <p>3. If the command starts with "Simon says", you must follow it.</p>
+        <p>4. If the command does not start with "Simon says", you should not follow it.</p>
+        <p>5. Click "Child Did ✅" if the child followed the command correctly.</p>
+        <p>6. Click "Child Didn't ❌" if the child did not follow the command correctly.</p>
+        <button onClick={onClose} style={{
+          marginTop: '10px',
+          padding: '10px 20px',
+          backgroundColor: '#4A628A',
+          color: '#fff',
+          border: 'none',
+          borderRadius: '5px',
+          cursor: 'pointer',
+        }}>
+          Close
+        </button>
+      </div>
+    </div>
+  );
+};
+
 export default function SimonSaysGame() {
   const [gameStarted, setGameStarted] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -124,6 +163,7 @@ export default function SimonSaysGame() {
   const [showGoodJob, setShowGoodJob] = useState(false);
   const [showIncorrectImage, setShowIncorrectImage] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const [showInstructions, setShowInstructions] = useState(false);
 
   const currentCommand = levels[currentLevel]?.[currentIndex] || {};
 
@@ -311,6 +351,12 @@ export default function SimonSaysGame() {
               <center><h2>Level {currentLevel} Selected</h2></center>
               <button
                 style={buttonStyle}
+                onClick={() => setShowInstructions(true)}
+              >
+                Instructions
+              </button>
+              <button
+                style={buttonStyle}
                 onClick={startGame}
               >
                 Start Game
@@ -351,6 +397,11 @@ export default function SimonSaysGame() {
             setShowModal(false);
             resetGame();
           }}
+        />
+      )}
+      {showInstructions && (
+        <InstructionsModal
+          onClose={() => setShowInstructions(false)}
         />
       )}
     </>

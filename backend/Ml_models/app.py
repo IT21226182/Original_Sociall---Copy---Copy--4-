@@ -1,18 +1,21 @@
 from flask import Flask, request, jsonify
-from flask_cors import CORS  # Import CORS
+from flask_cors import CORS
 import joblib
 import numpy as np
 import pandas as pd
 from sentipre import preprocessing_sentiment, vectorizer
-from riskpre import preprocessing_risk  # Import updated preprocessing function
+from riskpre import preprocessing_risk
 
 # Initialize Flask app
 app = Flask(__name__)
-CORS(app)  # Enable CORS for all routes
+CORS(app)
 
-# Load the sentiment analysis model
-with open("svmpp2.pkl", "rb") as f:
-    sentiment_model = joblib.load(f)
+# Load the sentiment analysis models
+with open("q1_new_risk.pkl", "rb") as f:
+    sentiment_model_1 = joblib.load(f)
+
+with open("q3_new_risk.pkl", "rb") as f:
+    sentiment_model_2 = joblib.load(f)
 
 # Load the risk prediction model
 with open("randomforest_model_secondtry_v2.pkl", "rb") as f:
@@ -22,41 +25,43 @@ with open("randomforest_model_secondtry_v2.pkl", "rb") as f:
 with open("stop/corpora/stopwords/english", "r") as file:
     sw = file.read().splitlines()
 
-# Load vocabulary
-vocab = pd.read_csv("vocabulary.txt", header=None)
-tokens = vocab[0].tolist()
+# Load vocabularies
+vocab1 = pd.read_csv("vocabq1/vocabulary.txt", header=None)
+tokens1 = vocab1[0].tolist()
+
+vocab2 = pd.read_csv("vocabq3/vocabulary.txt", header=None)
+tokens2 = vocab2[0].tolist()
 
 # Route for sentiment analysis
 @app.route("/sentiment", methods=["POST"])
 def sentiment_analysis():
     try:
-        # Get open-ended responses from the request
         data = request.json
-        responses = data.get("responses", [])  # List of 5 open-ended responses
+        q9 = data.get("q9", "")
+        q10 = data.get("q10", "")
 
-        print("Incoming Responses:", responses)
+        print(f"Received Q9: {q9}")
+        print(f"Received Q10: {q10}")
 
-        # Validate input
-        if not responses or len(responses) != 5:
-            return jsonify({"error": "Please provide exactly 5 open-ended responses."}), 400
+        # Preprocess and predict Q9
+        preprocessed_q9 = preprocessing_sentiment(q9, sw)
 
-        # Perform sentiment analysis
-        sentiment_results = []
-        for response in responses:
-            # Preprocess the text
-            preprocessed_text = preprocessing_sentiment(response, sw)
+        print(f"Preprocessed Q9: {preprocessed_q9}")
+        vectorized_q9 = vectorizer([preprocessed_q9], tokens1)
+        prediction_q9 = sentiment_model_1.predict(vectorized_q9)[0]
+        print(f"Prediction for Q9: {prediction_q9}")
 
-            print("Preprocessed Text:", preprocessed_text)
+        # Preprocess and predict Q10
+        preprocessed_q10 = preprocessing_sentiment(q10, sw)
+        print(f"Preprocessed Q10: {preprocessed_q10}")
 
-            # Vectorize the text
-            vectorized_text = vectorizer([preprocessed_text], tokens)
-            # Make a prediction
-            prediction = sentiment_model.predict(vectorized_text)[0]
-            sentiment_results.append(int(prediction))  # Convert to int (1 or 0)
+        vectorized_q10 = vectorizer([preprocessed_q10], tokens2)
+        prediction_q10 = sentiment_model_2.predict(vectorized_q10)[0]
 
-            print("Sentiment Results:", sentiment_results)
+        print(f"Prediction for Q10: {prediction_q10}")
 
-        return jsonify({"sentiments": sentiment_results})
+
+        return jsonify({"sentiment_q9": int(prediction_q9), "sentiment_q10": int(prediction_q10)})
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -65,40 +70,40 @@ def sentiment_analysis():
 @app.route("/risk-prediction", methods=["POST"])
 def risk_prediction():
     try:
-        # Get yes/no answers and sentiment results from the request
         data = request.json
-        yes_no_answers = data.get("yes_no_answers", [])  # List of 5 yes/no answers
-        sentiment_results = data.get("sentiment_results", [])  # List of 5 sentiment results (1 or 0)
+        yes_no_answers = data.get("yes_no_answers", [])
+        sentiment_q9 = data.get("sentiment_q9", 0)
+        sentiment_q10 = data.get("sentiment_q10", 0)
 
-        print("Incoming Yes/No Answers:", yes_no_answers)
-        print("Incoming Sentiment Results:", sentiment_results)
+      
+
+        print(f"Received Yes/No Answers: {yes_no_answers}")
+        print(f"Received Sentiment Q9: {sentiment_q9}")
+        print(f"Received Sentiment Q10: {sentiment_q10}")
 
         # Validate input
-        if len(yes_no_answers) != 5 or len(sentiment_results) != 5:
-            return jsonify({"error": "Please provide exactly 5 yes/no answers and 5 sentiment results."}), 400
-        
+        if len(yes_no_answers) != 8:
+            return jsonify({"error": "Please provide exactly 8 yes/no answers."}), 400
+
         # Convert yes/no answers into a DataFrame
-        yes_no_df = pd.DataFrame([yes_no_answers], columns=["A1", "A2", "A3", "A4", "A5"])
+        yes_no_df = pd.DataFrame([yes_no_answers], columns=["A1", "A2", "A3", "A4", "A5", "A6", "A7", "A8"])
 
         # Preprocess the yes/no answers
         processed_input = preprocessing_risk(yes_no_df)
-
-        print("Processed Input (Yes/No Answers):", processed_input)
+        print(f"Processed Yes/No Answers: {processed_input}")
 
         # Combine processed yes/no answers and sentiment results
-        combined_input = processed_input.values.flatten().tolist() + sentiment_results
-
-        print("Combined Input:", combined_input)
+        combined_input = processed_input.values.flatten().tolist() + [sentiment_q9, sentiment_q10]
+        print(f"Combined Input for Risk Prediction: {combined_input}")
 
         # Create a DataFrame with the correct feature names
         input_df = pd.DataFrame([combined_input], columns=["A1", "A2", "A3", "A4", "A5", "A6", "A7", "A8", "A9", "A10"])
 
         # Perform risk prediction
         risk_prediction = risk_model.predict(input_df)[0]
+        print(f"Risk Prediction: {risk_prediction}")
 
-        print("Risk Prediction:", risk_prediction)
-
-        return jsonify({"risk_prediction": int(risk_prediction)})  # Convert to int (1 or 0)
+        return jsonify({"risk_prediction": int(risk_prediction)})
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
