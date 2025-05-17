@@ -33,7 +33,8 @@ app.use("/Sroute", SocialRouter);
 const InitialRouter = require("./routes/Iroute.js");
 app.use("/Iroute", InitialRouter);
 
-
+const Proute = require("./routes/Proute.js");
+app.use("/Proute",  Proute);
 
 
 app.listen(PORT, () => {

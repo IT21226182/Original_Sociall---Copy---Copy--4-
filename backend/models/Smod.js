@@ -58,13 +58,14 @@ const socialSchema = new Schema({
     risk_prediction: {
         type: String, 
         required: false // Optional, since it will be added after the initial save
-    }
+    },
+});
     
     
 
 
 
-})
+
 
 
 const Sroute = mongoose.model("Sroute" ,socialSchema );

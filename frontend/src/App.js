@@ -7,7 +7,7 @@ import Questionnaire from './component/Questionnaire';
 import AllSales from './component/AllSales';
 import Edit from './component/Edit';
 import Simon from './component/Simon';
-import Progres from './component/Progres';
+import Progress from './component/Progress';
 
 function App() {
   return (
@@ -24,7 +24,7 @@ function App() {
           <Route path="/view" element={<AllSales />} />
           <Route path="/update" element={<Edit />} />
           <Route path="/simon" element={<Simon />} />
-          <Route path="/progres" element={<Progres />} />
+          <Route path="/pro" element={<Progress />} />
         </Routes>
       </BrowserRouter>
     </div>

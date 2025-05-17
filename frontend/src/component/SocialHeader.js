@@ -23,6 +23,9 @@ const SocialHeader =()=>{
                 <li className="nav-item">
                   <Link to="/view" className="nav-link" style={lableStyle}>View my response</Link>
                 </li>
+                <li className="nav-item">
+                  <Link to="/pro" className="nav-link" style={lableStyle}>Progress Dashboard</Link>
+                </li>
 
                 <li className="nav-item">
                   <Link to="/simon" className="nav-link" style={lableStyle}>Improvement Activity</Link>
